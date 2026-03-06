@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>액티브 BC 통합관리 시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://apis.google.com/js/api.js" async defer></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap');
+        body { font-family: 'Pretendard', sans-serif; letter-spacing: -0.025em; }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .modal-overlay { background-color: rgba(15, 23, 42, 0.75); backdrop-filter: blur(6px); }
+        .rank-gradient-1 { background: linear-gradient(135deg, #FFD700, #F59E0B); }
+        .rank-gradient-2 { background: linear-gradient(135deg, #E2E8F0, #94A3B8); }
+        .rank-gradient-3 { background: linear-gradient(135deg, #FDBA74, #D97706); }
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .star-perfect { color: #ef4444; }
+        .star-ac { color: #f59e0b; }
+    </style>
+</head>
+<body class="bg-slate-50 p-4 md:p-6 text-slate-900">
+    <div class="max-w-6xl mx-auto space-y-6 pb-24">
+        
+        <header class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div>
+                <h1 class="text-3xl font-black text-slate-900 uppercase">🎳 액티브 BC <span class="text-indigo-600">통합관리</span></h1>
+                <div id="cloudStatus" class="text-[11px] font-bold text-slate-400 mt-1 flex items-center gap-1.5">
+                    <span id="statusDot" class="w-2 h-2 rounded-full bg-slate-300"></span>
+                    <span id="statusText">오프라인 (로컬 저장 중)</span>
+                </div>
+            </div>
+            <div class="flex flex-wrap justify-center gap-2">
+                <button id="authBtn" onclick="handleAuthClick()" class="bg-white border-2 border-indigo-600 text-indigo-600 px-4 py-2 rounded-xl text-xs font-black shadow-sm hover:bg-indigo-50 transition flex items-center gap-2">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/1/12/Google_Drive_icon_%282020%29.svg" class="w-4 h-4"> 드라이브 동기화
+                </button>
+                <div class="h-10 w-px bg-slate-200 mx-1 hidden md:block"></div>
+                <button onclick="openModal('monthlyModal')" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm hover:bg-indigo-700 transition">📅 월간 랭킹</button>
+                <button onclick="openModal('annualModal')" class="bg-amber-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm hover:bg-amber-600 transition">👑 연간 랭킹</button>
+                <button onclick="exportData()" class="bg-white px-4 py-2.5 rounded-xl text-sm font-bold border border-slate-200 hover:bg-slate-50 transition">📦 백업</button>
+                <button onclick="clearAllScores()" class="bg-red-50 text-red-600 px-4 py-2.5 rounded-xl text-sm font-bold border border-red-100 transition">🧹 점수 초기화</button>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <section class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col h-full">
+                <h2 class="text-xl font-bold mb-5 flex items-center justify-between text-slate-800">👤 회원 관리 <span id="memberCountBadge" class="text-xs bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full font-bold">0명</span></h2>
+                <div class="flex gap-2 mb-5">
+                    <input type="text" id="newMemberName" placeholder="회원명 입력" class="flex-1 bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                    <button onclick="addNewMember()" class="bg-slate-800 text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-slate-900 transition">추가</button>
+                </div>
+                <div id="memberBadgeList" class="flex flex-wrap gap-2 overflow-y-auto pt-4 border-t border-slate-100 max-h-48 custom-scroll font-bold text-[11px]"></div>
+            </section>
+
+            <section class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 md:col-span-2">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3">
+                    <h2 class="text-xl font-bold text-slate-800">📝 성적 기록</h2>
+                    <div class="flex gap-2 w-full sm:w-auto">
+                        <input type="date" id="gameDateInput" class="bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl font-bold text-sm outline-none">
+                        <label class="bg-emerald-600 text-white px-4 py-2 rounded-xl text-xs font-bold cursor-pointer hover:bg-emerald-700 shadow-sm transition flex items-center">📗 엑셀 업로드(*) <input type="file" id="excelUpload" class="hidden" accept=".xlsx, .xls" onchange="uploadExcelWithStar(event)"></label>
+                    </div>
+                </div>
+                <div class="space-y-5">
+                    <select id="memberSelector" onchange="loadScoreData()" class="w-full bg-indigo-50 border border-indigo-100 p-3.5 rounded-2xl font-black text-xl text-indigo-900 cursor-pointer"></select>
+                    <div class="grid grid-cols-4 gap-4">
+                        <script>for(let i=1; i<=4; i++) { document.write(`<div><p class="text-sm text-center font-bold text-slate-500 mb-2">${i}게임</p><input type="number" id="g${i}" class="w-full text-center font-black text-3xl border-b-4 border-slate-100 focus:border-indigo-500 outline-none py-2 transition" tabindex="${i}" max="300"></div>`); }</script>
+                    </div>
+                    <div class="grid grid-cols-4 gap-4 bg-slate-50 p-3 rounded-2xl border border-slate-100 text-center">
+                        <script>for(let i=1; i<=4; i++) { document.write(`<label class="flex flex-col items-center gap-1.5 cursor-pointer py-1 group"><input type="checkbox" id="ac${i}" class="w-5 h-5 rounded border-slate-300 text-indigo-600 transition" tabindex="${i+4}"><span class="text-[10px] font-bold text-slate-500 group-hover:text-indigo-600 transition font-black uppercase">AC ${i}</span></label>`); }</script>
+                    </div>
+                    <button onclick="saveAndGoNext()" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-black text-xl shadow-lg hover:bg-indigo-700 active:scale-[0.98] transition-all" tabindex="9">기록 저장 후 다음 회원 →</button>
+                </div>
+            </section>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <section class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 md:col-span-2">
+                <h2 class="text-xl font-bold text-slate-800 mb-5">🏆 실시간 TOP 5</h2>
+                <div id="leaderboardList" class="grid grid-cols-2 sm:grid-cols-5 gap-3 text-center"></div>
+            </section>
+            <section class="bg-indigo-600 p-6 rounded-3xl shadow-lg text-white flex flex-col justify-between overflow-hidden relative">
+                <div class="z-10">
+                    <h2 class="text-xs font-bold opacity-70 uppercase tracking-widest mb-3 font-black text-white">Today's Best</h2>
+                    <p id="bestName" class="text-5xl font-black">-</p>
+                    <p id="bestScore" class="text-indigo-200 text-xl font-bold mt-1 italic tracking-tighter">No Score</p>
+                </div>
+                <div class="z-10 mt-6 pt-4 border-t border-indigo-400/30">
+                    <p class="text-sm font-bold opacity-90 mb-3 font-black uppercase tracking-tight">⚙️ 팀 편성 도구</p>
+                    <div class="flex items-center gap-3">
+                        <div class="flex-1 flex items-center bg-indigo-700 rounded-xl px-3 border border-indigo-50">
+                            <span class="text-xs font-bold text-indigo-300 mr-2 whitespace-nowrap">팀 수</span>
+                            <input type="number" id="teamN" value="2" class="w-full bg-transparent py-2 text-lg font-black text-white outline-none">
+                        </div>
+                        <button onclick="splitTeams()" class="bg-white text-indigo-600 px-4 py-3 rounded-xl font-black text-sm hover:bg-indigo-50 shadow-sm transition">편성</button>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <section class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 overflow-hidden w-full">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                <h2 class="text-2xl font-black text-slate-900 tracking-tight">📊 공식 월례회 성적표</h2>
+                <div class="flex items-center gap-2">
+                    <input type="date" id="viewDateSelector" onchange="renderUI()" class="bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                    <button onclick="saveAsCSV()" class="bg-emerald-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-emerald-700 shadow-sm transition">📗 엑셀저장</button>
+                </div>
+            </div>
+            <div class="overflow-x-auto rounded-xl border border-slate-100 max-h-[500px] overflow-y-auto custom-scroll">
+                <table class="w-full border-collapse text-center min-w-[850px]">
+                    <thead class="sticky top-0 z-10 bg-slate-50 shadow-sm font-black text-slate-400 text-[11px] uppercase border-b border-slate-100">
+                        <tr><th class="p-4">순번</th><th class="p-4 text-left">회원명</th><th class="p-4">1G</th><th class="p-4">2G</th><th class="p-4">3G</th><th class="p-4">4G</th><th class="p-4 bg-indigo-50/50 text-indigo-600">TOTAL</th><th class="p-4 bg-emerald-50/50 text-emerald-800">AVERAGE</th></tr>
+                    </thead>
+                    <tbody id="tableBody" class="text-sm font-bold text-slate-700 bg-white"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 w-full">
+            <h2 class="text-xl font-bold text-slate-800 mb-8">📈 실력 분석 대시보드</h2>
+            <select id="chartUserSelect" onchange="drawChart()" class="bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500 transition w-full md:w-64 mb-4"></select>
+            <div class="h-72 w-full"><canvas id="avgChart"></canvas></div>
+        </section>
+
+        <div id="monthlyModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
+            <div class="absolute inset-0 modal-overlay" onclick="closeModal('monthlyModal')"></div>
+            <div class="bg-white w-full max-w-4xl rounded-[32px] shadow-2xl z-10 overflow-hidden border border-slate-200">
+                <div class="bg-indigo-600 p-6 text-white flex justify-between items-center">
+                    <h3 class="text-2xl font-black italic">📅 <span id="modalMonthTitle"></span>월 누적 순위</h3>
+                    <button onclick="closeModal('monthlyModal')" class="text-4xl leading-none font-bold hover:scale-110 transition">&times;</button>
+                </div>
+                <div class="p-4 max-h-[75vh] overflow-y-auto custom-scroll">
+                    <table class="w-full text-center border-collapse">
+                        <thead class="text-[11px] font-black text-slate-400 uppercase border-b-2 border-slate-100">
+                            <tr><th class="p-4">순위</th><th class="p-4">변동</th><th class="p-4 text-left">회원명</th><th class="p-4 text-indigo-600">총점</th><th class="p-4">참여</th><th class="p-4">게임</th><th class="p-4 text-emerald-600">AVG</th></tr>
+                        </thead>
+                        <tbody id="monthlyRankBody" class="font-bold"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="annualModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
+            <div class="absolute inset-0 modal-overlay" onclick="closeModal('annualModal')"></div>
+            <div class="bg-white w-full max-w-4xl rounded-[32px] shadow-2xl z-10 overflow-hidden border border-slate-200">
+                <div class="bg-amber-500 p-6 text-white flex justify-between items-center"><h3 class="text-2xl font-black tracking-tight text-white">👑 2026 연간 통합 명예의 전당</h3><button onclick="closeModal('annualModal')" class="text-4xl leading-none font-bold hover:scale-110 transition">&times;</button></div>
+                <div class="p-4 max-h-[75vh] overflow-y-auto custom-scroll"><table class="w-full text-center border-collapse"><thead class="text-[11px] text-slate-400 uppercase font-black border-b-2 border-slate-100"><tr><th class="p-4">순위</th><th class="p-4 text-left">회원명</th><th class="p-4 text-amber-600">누적 총점</th><th class="p-4">참여</th><th class="p-4">게임</th><th class="p-4 text-emerald-600">전체 AVG</th></tr></thead><tbody id="annualRankBody" class="font-bold"></tbody></table></div>
+            </div>
+        </div>
+
+        <div id="teamModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
+            <div class="absolute inset-0 modal-overlay" onclick="closeModal('teamModal')"></div>
+            <div class="bg-white w-full max-w-2xl rounded-[32px] shadow-2xl z-10 overflow-hidden border border-indigo-100">
+                <div class="bg-indigo-900 p-6 text-white flex justify-between items-center"><h3 class="text-xl font-black text-white">🎲 팀 편성 결과</h3><button onclick="closeModal('teamModal')" class="text-3xl leading-none font-bold hover:scale-110 transition">&times;</button></div>
+                <div class="p-8"><div id="teamResultList" class="grid grid-cols-1 md:grid-cols-2 gap-6 font-bold text-lg text-slate-800"></div></div>
+                <div class="p-6 bg-slate-50 border-t border-slate-100 text-center"><button onclick="closeModal('teamModal')" class="bg-indigo-600 text-white px-10 py-3.5 rounded-2xl font-black shadow-sm">확인 완료</button></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        /* -----------------------------------------------------------
+           구글 드라이브 연동 핵심 설정부
+           주의: CLIENT_ID를 본인이 발급받은 값으로 교체하세요.
+        ----------------------------------------------------------- */
+        const CLIENT_ID = '168841538864-8cbah16psh4sv40d9iv2599ijo9rck7q.apps.googleusercontent.com'; // 발급받은 ID 입력
+        const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+        let tokenClient;
+        let accessToken = null;
+        let syncFileName = "ActiveBC_Sync_Data.json";
+
+        function initGIS() {
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: CLIENT_ID,
+                scope: SCOPES,
+                callback: (tokenResponse) => {
+                    if (tokenResponse.error !== undefined) throw (tokenResponse);
+                    accessToken = tokenResponse.access_token;
+                    updateCloudStatus(true);
+                    syncFromDrive(); // 로그인 성공 시 즉시 드라이브에서 데이터 가져오기
+                },
+            });
+        }
+
+        async function handleAuthClick() {
+            if (accessToken === null) {
+                tokenClient.requestAccessToken({prompt: 'consent'});
+            } else {
+                syncToDrive(); // 로그인 되어 있으면 수동 업로드
+            }
+        }
+
+        function updateCloudStatus(isOnline) {
+            const dot = document.getElementById('statusDot');
+            const text = document.getElementById('statusText');
+            const btn = document.getElementById('authBtn');
+            if (isOnline) {
+                dot.className = "w-2 h-2 rounded-full bg-emerald-500";
+                text.innerText = "온라인 (구글 드라이브 동기화 중)";
+                btn.innerText = "지금 동기화 실행";
+            }
+        }
+
+        // 드라이브에서 데이터 불러오기
+        async function syncFromDrive() {
+            try {
+                const response = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${syncFileName}' and trashed=false`, {
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                });
+                const list = await response.json();
+                if (list.files.length > 0) {
+                    const fileId = list.files[0].id;
+                    const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+                        headers: { 'Authorization': `Bearer ${accessToken}` }
+                    });
+                    const driveData = await res.json();
+                    if (confirm("구글 드라이브의 데이터를 불러와 현재 데이터를 덮어씌울까요?")) {
+                        members = driveData.members;
+                        history = driveData.history;
+                        updateDB(false); // 로컬 저장만 하고 드라이브 업로드는 무한루프 방지를 위해 하지 않음
+                        alert("동기화 성공!");
+                    }
+                } else {
+                    alert("드라이브에 저장된 파일이 없습니다. 현재 데이터를 첫 동기화 파일로 생성합니다.");
+                    syncToDrive();
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        // 드라이브로 데이터 업로드
+        async function syncToDrive() {
+            if (!accessToken) return;
+            const content = JSON.stringify({ members, history });
+            try {
+                const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${syncFileName}' and trashed=false`, {
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                });
+                const list = await searchRes.json();
+                
+                let url = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=media';
+                let method = 'POST';
+                let metadata = { name: syncFileName, mimeType: 'application/json' };
+
+                if (list.files.length > 0) {
+                    const fileId = list.files[0].id;
+                    url = `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`;
+                    method = 'PATCH';
+                } else {
+                    // 신규 생성 시에는 메타데이터 먼저 필요 (간소화된 방식 사용)
+                    const createRes = await fetch('https://www.googleapis.com/drive/v3/files', {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify(metadata)
+                    });
+                    const newFile = await createRes.json();
+                    url = `https://www.googleapis.com/upload/drive/v3/files/${newFile.id}?uploadType=media`;
+                    method = 'PATCH';
+                }
+
+                await fetch(url, {
+                    method: method,
+                    headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+                    body: content
+                });
+                alert("드라이브 백업 완료!");
+            } catch (err) { alert("드라이브 동기화 실패: " + err); }
+        }
+
+        /* -----------------------------------------------------------
+           기존 볼링 관리 로직 (v1~v32 통합)
+        ----------------------------------------------------------- */
+        const PHOTO_ORDER = ["권덕화", "김경아", "김병용", "김승진", "김재규", "김재훈", "김지수", "김창우", "박미경", "박미정", "박세혁", "변민애", "선윤미", "안광환", "오범석", "오환준", "이광우", "이대호", "이봉선", "이진수", "임국화", "장남수", "조문기", "조아람", "조왕제", "최동호", "한상광", "황옥인"];
+        const INITIAL_DATE = "2026-03-06";
+        const INITIAL_SCORES = {"권덕화":{s:[192,107,161,148],ac:[0,0,0,0]},"김경아":{s:[125,163,210,171],ac:[0,0,0,0]},"김병용":{s:[183,188,191,155],ac:[0,0,0,0]},"김재규":{s:[175,197,210,158],ac:[0,0,0,0]},"김창우":{s:[200,168,162,185],ac:[0,0,0,0]},"박미경":{s:[145,159,108,168],ac:[0,0,0,0]},"박미정":{s:[163,148,224,153],ac:[0,0,0,0]},"박세혁":{s:[147,131,165,143],ac:[0,0,0,0]},"변민애":{s:[178,134,166,170],ac:[0,0,0,0]},"선윤미":{s:[149,176,186,141],ac:[0,0,0,0]},"안광환":{s:[180,171,213,259],ac:[0,0,0,0]},"오범석":{s:[153,114,166,186],ac:[0,0,0,0]},"오환준":{s:[186,145,192,179],ac:[0,0,0,0]},"이광우":{s:[268,228,185,140],ac:[0,0,0,0]},"이봉선":{s:[167,139,133,175],ac:[0,0,0,0]},"이진수":{s:[212,203,147,216],ac:[0,0,0,0]},"임국화":{s:[155,121,165,169],ac:[0,0,0,0]},"장남수":{s:[213,242,229,175],ac:[0,0,0,0]},"조문기":{s:[177,121,184,177],ac:[0,0,0,0]},"조아람":{s:[158,150,148,197],ac:[0,0,0,0]},"조왕제":{s:[163,195,170,159],ac:[0,0,0,0]},"최동호":{s:[167,200,159,210],ac:[0,0,0,0]},"한상광":{s:[110,208,183,204],ac:[0,0,0,0]}};
+
+        const K_M = 'ABC_M_V33', K_H = 'ABC_H_V33';
+        let members = JSON.parse(localStorage.getItem(K_M)) || PHOTO_ORDER;
+        let history = JSON.parse(localStorage.getItem(K_H)) || {[INITIAL_DATE]: INITIAL_SCORES};
+        let chartObj = null;
+
+        window.onload = () => {
+            const now = new Date().toISOString().split('T')[0];
+            document.getElementById('gameDateInput').value = now;
+            document.getElementById('viewDateSelector').value = now;
+            renderUI();
+            initGIS();
+        };
+
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); document.getElementById(id).classList.add('flex'); if(id === 'monthlyModal') renderMonthlyRank(); if(id === 'annualModal') renderAnnualRank(); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); }
+
+        function getStar(scores, acFlags, index = -1) {
+            if (index === -1) { if (scores.includes(300)) return '<span class="star-perfect ml-1">★</span>'; if (acFlags.includes(true)) return '<span class="star-ac ml-1">⭐</span>'; return ''; }
+            if (scores[index] === 300) return '<span class="star-perfect ml-0.5">★</span>';
+            if (acFlags[index]) return '<span class="star-ac ml-0.5">⭐</span>';
+            return '';
+        }
+
+        function renderUI() {
+            const vDate = document.getElementById('viewDateSelector').value;
+            document.getElementById('memberCountBadge').innerText = `${members.length}명`;
+            document.getElementById('memberBadgeList').innerHTML = members.map(m => `<div class="bg-slate-50 px-2 py-1 rounded-lg border border-slate-200 flex items-center shadow-sm text-[11px] font-bold text-slate-700">${m}<button onclick="removeMember('${m}')" class="ml-2 text-slate-300 hover:text-red-500 font-black">×</button></div>`).join('');
+            const opts = '<option value="">회원을 선택하세요</option>' + members.map(m => `<option value="${m}">${m}</option>`).join('');
+            document.getElementById('memberSelector').innerHTML = opts; document.getElementById('chartUserSelect').innerHTML = opts;
+
+            const dayData = history[vDate] || {};
+            const tbody = document.getElementById('tableBody');
+            const rankData = members.map(name => { const d = dayData[name] || {s:[0,0,0,0], ac:[0,0,0,0]}; return { name, total: d.s.reduce((a,b)=>a+b, 0), data: d }; });
+            tbody.innerHTML = rankData.map((obj, i) => `<tr class="border-b border-slate-50 hover:bg-indigo-50/30 font-bold text-base"><td class="p-4 text-[11px] text-slate-300 font-mono">${i+1}</td><td class="p-4 text-left text-slate-900">${obj.name}${getStar(obj.data.s, obj.data.ac)}</td>${obj.data.s.map((s, idx) => `<td class="p-4 ${obj.data.ac[idx]?'bg-indigo-50/50':''} ${s===300?'text-red-600':''}">${s||'-'}${getStar(obj.data.s, obj.data.ac, idx)}</td>`).join('')}<td class="p-4 bg-indigo-50/50 text-indigo-700 text-xl">${obj.total||'-'}</td><td class="p-4 bg-emerald-50/50 text-emerald-800 text-xl">${calcAvg(obj.name)}</td></tr>`).join('');
+
+            const top5 = [...rankData].filter(o => o.total > 0).sort((a,b) => b.total - a.total).slice(0, 5);
+            document.getElementById('leaderboardList').innerHTML = top5.map((o, i) => `<div class="flex flex-col items-center p-4 rounded-2xl shadow-sm border ${i==0?'rank-gradient-1 text-white':i==1?'rank-gradient-2 text-slate-700':i==2?'rank-gradient-3 text-white border-orange-400':'bg-slate-50'}"><span class="text-[10px] font-bold opacity-80 uppercase">${i+1}위</span><span class="text-xl font-black truncate w-full text-center">${o.name}</span><span class="text-base font-bold opacity-90">${o.total}</span></div>`).join('') || '<div class="col-span-5 text-center text-slate-300 text-sm py-4 italic font-bold">데이터 없음</div>';
+            let hg = 0, win = "-"; for(let n in dayData) { dayData[n].s.forEach(s => { if(s > hg) { hg = s; win = n; } }); }
+            document.getElementById('bestName').innerText = hg > 0 ? win : "-"; document.getElementById('bestScore').innerText = hg > 0 ? `${hg}pt` : "No Score";
+        }
+
+        function getRankArray(filterFn) {
+            return members.map(name => {
+                let t = 0, g = 0, v = 0;
+                for (let d in history) { if (filterFn(d) && history[d][name]) { const valid = history[d][name].s.filter(s => s > 0); if(valid.length > 0) { t += valid.reduce((a, b) => a + b, 0); g += valid.length; v++; } } }
+                return { name, t, v, g, avg: g > 0 ? (t/g).toFixed(1) : "0.0" };
+            }).filter(s => s.t > 0).sort((a, b) => b.t - a.t);
+        }
+
+        function renderMonthlyRank() {
+            const target = document.getElementById('viewDateSelector').value.substring(0, 7);
+            const [y, m] = target.split('-').map(Number);
+            const prev = (m === 1) ? `${y-1}-12` : `${y}-${String(m-1).padStart(2, '0')}`;
+            document.getElementById('modalMonthTitle').innerText = m;
+            const curr = getRankArray(d => d.startsWith(target));
+            const past = getRankArray(d => d.startsWith(prev));
+
+            document.getElementById('monthlyRankBody').innerHTML = curr.map((s, i) => {
+                const pIdx = past.findIndex(p => p.name === s.name);
+                let diffHtml = pIdx === -1 ? '<span class="text-emerald-500 text-xs font-black">NEW</span>' : (pIdx > i ? `<span class="text-red-500 text-base">▲${pIdx-i}</span>` : (pIdx < i ? `<span class="text-blue-500 text-base">▼${i-pIdx}</span>` : '<span class="text-slate-300">-</span>'));
+                return `<tr class="border-b border-slate-50 font-bold"><td class="p-5 text-2xl font-black italic text-slate-400">${getMedal(i)} ${i+1}</td><td class="p-5 font-black">${diffHtml}</td><td class="p-5 text-2xl text-slate-800 text-left">${s.name}</td><td class="p-5 text-3xl font-black text-indigo-600">${s.t}</td><td class="p-5 text-xl font-bold text-slate-600">${s.v}회</td><td class="p-5 text-xl font-bold text-slate-500">${s.g}G</td><td class="p-5 text-3xl font-black text-emerald-600">${s.avg}</td></tr>`;
+            }).join('') || '<tr><td colspan="7" class="p-20 text-xl font-bold text-slate-300">데이터 없음</td></tr>';
+        }
+
+        function renderAnnualRank() {
+            const stats = getRankArray(d => true);
+            document.getElementById('annualRankBody').innerHTML = stats.map((s, i) => `<tr class="border-b border-slate-100 hover:bg-slate-50 transition font-bold"><td class="p-5 text-2xl font-black italic text-slate-400">${getMedal(i)} ${i+1}</td><td class="p-5 text-2xl text-slate-800 text-left">${s.name}</td><td class="p-5 text-3xl font-black text-amber-600">${s.t}</td><td class="p-5 text-xl font-bold text-slate-600">${s.v}회</td><td class="p-5 text-xl font-bold text-slate-500">${s.g}G</td><td class="p-5 text-3xl font-black text-emerald-600">${s.avg}</td></tr>`).join('') || '<tr><td colspan="6" class="p-20 text-xl font-bold text-slate-300">데이터 없음</td></tr>';
+        }
+
+        function getMedal(i) { return i === 0 ? '🥇' : (i === 1 ? '🥈' : (i === 2 ? '🥉' : '')); }
+        function calcAvg(n) { let s = 0, c = 0; for(let d in history) { if(history[d][n]) { const v = history[d][n].s.filter(g=>g>0); s += v.reduce((a,b)=>a+b,0); c += v.length; } } return c > 0 ? (s/c).toFixed(1) : "0.0"; }
+        function updateDB(shouldSync = true) {
+            localStorage.setItem(K_M, JSON.stringify(members));
+            localStorage.setItem(K_H, JSON.stringify(history));
+            renderUI();
+            if(chartObj) drawChart();
+            if(shouldSync && accessToken) syncToDrive(); // 로컬 저장 시 자동으로 클라우드 업로드
+        }
+        function clearAllScores() { if(confirm("점수 기록을 모두 초기화할까요?")) { history = {}; updateDB(); } }
+        function saveAndGoNext() {
+            const date = document.getElementById('gameDateInput').value, sel = document.getElementById('memberSelector'), name = sel.value; if(!name) return alert("회원을 선택하세요.");
+            const s = [], ac = []; for(let i=1; i<=4; i++) { let val = parseInt(document.getElementById(`g${i}`).value) || 0; if (val > 300) { alert(`점수 오류!`); return; } s.push(val); ac.push(document.getElementById(`ac${i}`).checked); }
+            if(!history[date]) history[date] = {}; history[date][name] = { s, ac }; updateDB();
+            const idx = members.indexOf(name); if (idx < members.length - 1) { sel.value = members[idx+1]; loadScoreData(); document.getElementById('g1').focus(); document.getElementById('g1').select(); }
+        }
+        function loadScoreData() { const date = document.getElementById('gameDateInput').value, name = document.getElementById('memberSelector').value; const entry = (history[date] && history[date][name]) || {s:['','','',''], ac:[0,0,0,0]}; [1,2,3,4].forEach(i => { document.getElementById(`g${i}`).value = entry.s[i-1]; document.getElementById(`ac${i}`).checked = !!entry.ac[i-1]; }); }
+        function drawChart() { const n = document.getElementById('chartUserSelect').value; if(!n) return; const ctx = document.getElementById('avgChart').getContext('2d'); const l = [], d = []; let ts = 0, tc = 0; Object.keys(history).sort().forEach(dt => { if(history[dt][n]) { const g = history[dt][n].s.filter(v=>v>0); if(g.length>0){ ts += g.reduce((a,b)=>a+b,0); tc += g.length; l.push(dt); d.push((ts/tc).toFixed(1)); } } }); if(chartObj) chartObj.destroy(); chartObj = new Chart(ctx, { type:'line', data:{labels:l, datasets:[{label:'AVG', data:d, borderColor:'#4f46e5', tension:0.3, fill:true, backgroundColor:'rgba(79,70,229,0.05)', pointRadius:5, pointBackgroundColor:'#4f46e5'}]}, options:{maintainAspectRatio:false, plugins:{legend:{display:false}}}}); }
+        function splitTeams() { const n = parseInt(document.getElementById('teamN').value); const active = members.map(m => ({name:m, avg:parseFloat(calcAvg(m))})).sort((a,b)=>b.avg-a.avg); const teams = Array.from({length:n}, () => []); active.forEach((m, i) => { const idx = Math.floor(i/n)%2===0 ? (i%n) : (n-1-(i%n)); teams[idx].push(`${m.name}(${m.avg})`); }); document.getElementById('teamResultList').innerHTML = teams.map((t, i) => `<div class="p-5 bg-slate-50 border-2 border-slate-100 rounded-3xl"><span class="text-indigo-600 font-black block mb-2 text-sm uppercase tracking-widest border-b-2 border-indigo-100 pb-1">TEAM ${i+1}</span><p class="text-slate-800 font-bold text-lg leading-relaxed">${t.join(', ')}</p></div>`).join(''); openModal('teamModal'); }
+        function exportData() { const b = new Blob([JSON.stringify({members, history})], {type:'application/json'}); const a = document.createElement("a"); a.href=URL.createObjectURL(b); a.download=`ActiveBC_Backup.json`; a.click(); }
+        function importData(e) { const r = new FileReader(); r.onload=(ev) => { const d = JSON.parse(ev.target.result); members = d.members; history = d.history; updateDB(); }; r.readAsText(e.target.files[0]); }
+        function saveAsCSV() {
+            const dStr = document.getElementById('viewDateSelector').value;
+            let csv = "\uFEFF순번,이름,1G,2G,3G,4G,총점,AVG\n";
+            members.forEach((m, i) => {
+                const entry = (history[dStr] && history[dStr][m]) || {s:[0,0,0,0], ac:[0,0,0,0]};
+                const fs = entry.s.map((score, idx) => (score === 300 || entry.ac[idx]) ? `${score}*` : score);
+                csv += `${i+1},${m},${fs[0]},${fs[1]},${fs[2]},${fs[3]},${entry.s.reduce((a, b) => a + b, 0)},${calcAvg(m)}\n`;
+            });
+            const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'})); link.download = `ActiveBC_Record_${dStr}.csv`; link.click();
+        }
+        function uploadExcelWithStar(event) {
+            const file = event.target.files[0]; if (!file) return;
+            const date = document.getElementById('gameDateInput').value;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const workbook = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+                const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                if (!history[date]) history[date] = {};
+                json.forEach(row => {
+                    const name = row['이름'] || row['회원명'] || row['성명'];
+                    if (name && members.includes(name)) {
+                        const s = [], ac = [];
+                        ['1G','2G','3G','4G'].forEach(col => { const val = String(row[col] || row[col[0]+'게임'] || ''); let score = parseInt(val.replace('*', '')) || 0; if(score > 300) score = 0; s.push(score); ac.push(val.includes('*')); });
+                        history[date][name] = { s, ac };
+                    }
+                });
+                updateDB(); alert('업로드 완료!'); event.target.value = '';
+            };
+            reader.readAsArrayBuffer(file);
+        }
+        function addNewMember() { const n = document.getElementById('newMemberName').value.trim(); if(n && !members.includes(n)) { members.push(n); document.getElementById('newMemberName').value = ''; updateDB(); } }
+        function removeMember(n) { if(confirm(`${n} 삭제?`)) { members = members.filter(m=>m!==n); for(let d in history) delete history[d][n]; updateDB(); } }
+        function resetToPhotoData() { if(confirm("초기화?")) { localStorage.clear(); location.reload(); } }
+    </script>
+</body>
+</html>
