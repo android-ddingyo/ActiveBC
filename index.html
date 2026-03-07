@@ -154,7 +154,7 @@
                 </div>
                 <select id="memberSelector" onchange="loadScoreData()" style="width:100%;background:var(--surface-2);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;font-size:18px;font-weight:600;color:var(--ink);font-family:'DM Sans',sans-serif;outline:none;margin-bottom:16px;cursor:pointer;"></select>
                 <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px;">
-                    <script>for(let i=1; i<=4; i++) { document.write(`<div style="text-align:center;"><p style="font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--ink-3);margin-bottom:8px;text-transform:uppercase;">${i}G</p><input type="number" id="g${i}" style="width:100%;text-align:center;font-size:30px;font-weight:500;font-family:'DM Mono',monospace;border:none;border-bottom:2px solid var(--border);background:transparent;color:var(--ink);padding:6px 0;outline:none;transition:border-color .15s;" max="300" tabindex="${i}" onfocus="this.style.borderBottomColor='var(--ink)'" onblur="this.style.borderBottomColor='var(--border)'"></div>`); }</script>
+                    <script>for(let i=1; i<=4; i++) { document.write(`<div style="text-align:center;"><p style="font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--ink-3);margin-bottom:8px;text-transform:uppercase;">${i}G</p><input type="number" id="g${i}" style="width:100%;text-align:center;font-size:30px;font-weight:500;font-family:'DM Mono',monospace;border:none;border-bottom:2px solid var(--border);background:transparent;color:var(--ink);padding:6px 0;outline:none;transition:border-color .15s,color .15s;" min="0" max="300" tabindex="${i}" oninput="clampScore(this)" onfocus="this.style.borderBottomColor='var(--ink)'" onblur="this.style.borderBottomColor='var(--border)'"></div>`); }</script>
                 </div>
                 <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;background:var(--surface-2);padding:12px;border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:16px;text-align:center;">
                     <script>for(let i=1; i<=4; i++) { document.write(`<label style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="ac${i}" style="width:18px;height:18px;border-radius:5px;accent-color:var(--ink);cursor:pointer;" tabindex="${i+4}"><span style="font-size:10px;font-weight:600;color:var(--ink-3);letter-spacing:.06em;text-transform:uppercase;">AC ${i}</span></label>`); }</script>
@@ -197,7 +197,13 @@
         <section class="bc-card" style="overflow:hidden;margin-bottom:12px;">
             <div style="display:flex;justify-content:space-between;align-items:center;padding:20px 24px 16px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:10px;">
                 <p class="sec-label">📊 공식 월례회 성적표</p>
-                <input type="date" id="viewDateSelector" onchange="renderUI()" class="bc-input" style="width:auto;font-size:12px;padding:7px 12px;">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                    <input type="date" id="viewDateSelector" onchange="renderUI()" class="bc-input" style="width:auto;font-size:12px;padding:7px 12px;">
+                    <button onclick="exportToExcel()" class="bc-btn bc-btn-primary" style="font-size:12px;padding:8px 14px;display:flex;align-items:center;gap:6px;color:#fff !important;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        엑셀 내보내기
+                    </button>
+                </div>
             </div>
             <div class="custom-scroll" style="overflow-x:auto;max-height:560px;overflow-y:auto;">
                 <table style="width:100%;border-collapse:collapse;text-align:center;min-width:900px;font-size:13px;">
@@ -429,9 +435,85 @@
         }
         function getStar(s, ac, idx = -1) { if (idx === -1) { if (s.includes(300)) return '★'; if (ac.includes(true)) return '⭐'; return ''; } if (s[idx] === 300) return '★'; if (ac[idx]) return '⭐'; return ''; }
         function exportData() { const b = new Blob([JSON.stringify({ members, history })], { type: 'application/json' }); const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = `ActiveBC_Backup.json`; a.click(); }
+        function exportToExcel() {
+            const vDate = document.getElementById('viewDateSelector').value;
+            if (!vDate) { alert('날짜를 먼저 선택해주세요.'); return; }
+            const dayData = history[vDate] || {};
+
+            // 헤더 행
+            const header = ['순번', '회원명', '1G', '2G', '3G', '4G', 'TOTAL', 'AVG', '평가(BASE)', 'DIFF', '올커버'];
+
+            // 데이터 행
+            const rows = members.map((m, i) => {
+                const d = dayData[m.name] || { s: [0,0,0,0], ac: [0,0,0,0] };
+                const validS = d.s.filter(s => s > 0);
+                const total = validS.reduce((a,b) => a+b, 0);
+                const avg = validS.length > 0 ? parseFloat((total / validS.length).toFixed(1)) : '';
+                const diff = avg !== '' ? parseFloat((avg - m.base).toFixed(1)) : '';
+                const ac = d.ac.includes(true) ? '⭐' : '';
+                const perfect = d.s.includes(300) ? '★' : '';
+                return [
+                    i + 1,
+                    m.name + (perfect || ac ? ' ' + (perfect || ac) : ''),
+                    d.s[0] || '-', d.s[1] || '-', d.s[2] || '-', d.s[3] || '-',
+                    total || '-',
+                    avg || '-',
+                    m.base,
+                    diff !== '' ? (diff > 0 ? '+' + diff : diff) : '-',
+                    d.ac.map((v,i) => v ? `AC${i+1}` : '').filter(Boolean).join(', ') || '-'
+                ];
+            });
+
+            // 월별 합계 행
+            const totals = members.map(m => {
+                const d = dayData[m.name] || { s:[0,0,0,0] };
+                return d.s.filter(s => s > 0).reduce((a,b) => a+b, 0);
+            });
+            const grandTotal = totals.reduce((a,b) => a+b, 0);
+            const summaryRow = ['', '[ 당일 합계 ]', '', '', '', '', grandTotal, '', '', '', ''];
+
+            // 워크시트 생성
+            const ws = XLSX.utils.aoa_to_sheet([header, ...rows, [], summaryRow]);
+
+            // 컬럼 너비 설정
+            ws['!cols'] = [
+                {wch:6}, {wch:12}, {wch:8}, {wch:8}, {wch:8}, {wch:8},
+                {wch:10}, {wch:8}, {wch:10}, {wch:8}, {wch:14}
+            ];
+
+            // 헤더 스타일 (배경색)
+            const range = XLSX.utils.decode_range(ws['!ref']);
+            for (let C = range.s.c; C <= range.e.c; C++) {
+                const cell = ws[XLSX.utils.encode_cell({r:0, c:C})];
+                if (cell) {
+                    cell.s = { font: { bold: true }, fill: { fgColor: { rgb: 'EFF6FF' } }, alignment: { horizontal: 'center' } };
+                }
+            }
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, vDate + ' 성적표');
+
+            const fileName = `ActiveBC_성적표_${vDate}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+        }
         function importData(event) { const f = event.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = (e) => { const d = JSON.parse(e.target.result); if (d.members) { members = d.members; history = d.history; updateDB(true); alert("데이터 복구 성공!"); } }; r.readAsText(f); }
         function addNewMember() { const n = document.getElementById('newMemberName').value.trim(); const b = parseInt(document.getElementById('newMemberBase').value) || 0; const g = document.getElementById('newMemberGender').value; if (n && !members.find(m => m.name === n)) { members.push({ name: n, base: b, gender: g }); updateDB(); } }
         function removeMember(n) { if(confirm(`${n} 회원을 삭제할까요?`)) { members = members.filter(m => m.name !== n); updateDB(); } }
+        function clampScore(el) {
+            let v = parseInt(el.value);
+            if (isNaN(v) || v < 0) { el.value = ''; el.style.color = 'var(--ink)'; return; }
+            if (v > 300) {
+                el.value = 300;
+                el.style.color = 'var(--danger)';
+                el.style.borderBottomColor = 'var(--danger)';
+                setTimeout(() => {
+                    el.style.color = 'var(--ink)';
+                    el.style.borderBottomColor = 'var(--ink)';
+                }, 600);
+            } else {
+                el.style.color = v === 300 ? 'var(--danger)' : 'var(--ink)';
+            }
+        }
         function saveAndGoNext() { const d = document.getElementById('gameDateInput').value, n = document.getElementById('memberSelector').value; if(!n) return; const s = [], ac = []; for(let i=1; i<=4; i++) { s.push(parseInt(document.getElementById(`g${i}`).value) || 0); ac.push(document.getElementById(`ac${i}`).checked); } if(!history[d]) history[d] = {}; history[d][n] = { s, ac }; updateDB(); const idx = members.findIndex(m => m.name === n); if(idx < members.length - 1) { document.getElementById('memberSelector').value = members[idx+1].name; loadScoreData(); } }
         function loadScoreData() { const d = document.getElementById('gameDateInput').value, n = document.getElementById('memberSelector').value; const e = (history[d] && history[d][n]) || { s: ['', '', '', ''], ac: [0, 0, 0, 0] }; [1, 2, 3, 4].forEach(i => { document.getElementById(`g${i}`).value = e.s[i - 1]; document.getElementById(`ac${i}`).checked = !!e.ac[i - 1]; }); }
         function drawChart() { const n=document.getElementById('chartUserSelect').value; if(!n) return; const ctx=document.getElementById('avgChart').getContext('2d'); const l=[],d=[]; let ts=0,tc=0; Object.keys(history).sort().forEach(dt=>{ if(history[dt][n]){ const g=history[dt][n].s.filter(v=>v>0); if(g.length>0){ts+=g.reduce((a,b)=>a+b,0);tc+=g.length;l.push(dt);d.push((ts/tc).toFixed(1));} } }); if(chartObj) chartObj.destroy(); chartObj = new Chart(ctx, { type:'line', data:{labels:l, datasets:[{label:'AVG', data:d, borderColor:'var(--ink)', tension:0.3, fill:true, backgroundColor:'rgba(30,41,59,0.04)'}]}, options:{maintainAspectRatio:false, plugins:{legend:{display:false}}}}); }
