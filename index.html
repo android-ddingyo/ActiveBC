@@ -84,11 +84,17 @@
                 <div class="space-y-2 mb-5">
                     <div class="flex gap-2">
                         <input type="text" id="newMemberName" placeholder="성함" class="flex-1 bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-black">
-                        <input type="number" id="newMemberBase" placeholder="평가" class="w-14 bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-sm text-center font-black">
-                        <select id="newMemberGender" class="w-14 bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-sm font-bold text-center"><option value="M">남</option><option value="F">여</option></select>
+                        <input type="number" id="newMemberBase" placeholder="평가" class="w-16 bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-sm text-center font-black">
                     </div>
-                    <button onclick="addNewMember()" class="w-full bg-slate-800 text-white py-3 rounded-xl text-sm hover:bg-slate-900 transition">회원 추가</button>
+                    <div class="flex gap-2">
+                        <div class="flex gap-1 flex-1">
+                            <button id="genderBtnM" onclick="selectGender('M')" class="flex-1 py-2.5 rounded-xl text-sm font-black border-2 border-indigo-500 bg-indigo-500 text-white transition">남성</button>
+                            <button id="genderBtnF" onclick="selectGender('F')" class="flex-1 py-2.5 rounded-xl text-sm font-black border-2 border-slate-200 bg-slate-50 text-slate-500 transition">여성</button>
+                        </div>
+                        <button onclick="addNewMember()" class="flex-1 bg-slate-800 text-white py-2.5 rounded-xl text-sm hover:bg-slate-900 transition font-black">회원 추가</button>
+                    </div>
                 </div>
+                <input type="hidden" id="newMemberGender" value="M">
                 <div id="memberBadgeList" class="flex flex-wrap gap-2 overflow-y-auto pt-4 border-t border-slate-100 max-h-48 custom-scroll"></div>
             </section>
 
@@ -254,7 +260,15 @@
         function renderUI() {
             const vDate = document.getElementById('viewDateSelector').value;
             document.getElementById('memberCountBadge').innerText = `${members.length}명`;
-            document.getElementById('memberBadgeList').innerHTML = members.map(m => `<div class="bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 flex items-center shadow-sm text-[11px] font-black"><span class="cursor-pointer text-slate-700 hover:text-indigo-600 transition" onclick="editMemberInfo('${m.name}')">${m.name}(${m.base})</span><button onclick="removeMember('${m.name}')" class="ml-2 text-slate-300 hover:text-red-500 font-black">×</button></div>`).join('');
+            document.getElementById('memberBadgeList').innerHTML = members.map(m => {
+                const gLabel = m.gender === 'F' ? '여' : '남';
+                const gColor = m.gender === 'F' ? 'text-pink-500' : 'text-blue-500';
+                return `<div class="bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 flex items-center shadow-sm text-[11px] font-black gap-1">
+                    <span class="cursor-pointer text-slate-700 hover:text-indigo-600 transition" onclick="editMemberInfo('${m.name}')">${m.name}(${m.base})</span>
+                    <button onclick="toggleGender('${m.name}')" class="font-black ${gColor} hover:opacity-70 transition">${gLabel}</button>
+                    <button onclick="removeMember('${m.name}')" class="ml-1 text-slate-300 hover:text-red-500 font-black">×</button>
+                </div>`;
+            }).join('');
             
             const opts = '<option value="">회원 선택</option>' + members.map(m => `<option value="${m.name}">${m.name}</option>`).join('');
             document.getElementById('memberSelector').innerHTML = opts; 
@@ -340,6 +354,14 @@
         function openModal(id) { const el = document.getElementById(id); if(!el) return; el.style.display = 'flex'; if(id==='monthlyModal') renderMonthlyRank(); if(id==='awardSummaryModal') renderAwardSummary(); if(id==='annualModal') renderAnnualRank(); }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
         function editMemberInfo(name) { const m = members.find(x => x.name === name); const nB = prompt(`${name} AVG:`, m.base); if (nB !== null) { m.base = parseInt(nB) || 0; updateDB(); } }
+        function toggleGender(name) { const m = members.find(x => x.name === name); m.gender = m.gender === 'F' ? 'M' : 'F'; updateDB(); }
+        let _selectedGender = 'M';
+        function selectGender(g) {
+            _selectedGender = g;
+            document.getElementById('newMemberGender').value = g;
+            document.getElementById('genderBtnM').className = g === 'M' ? 'flex-1 py-2.5 rounded-xl text-sm font-black border-2 border-indigo-500 bg-indigo-500 text-white transition' : 'flex-1 py-2.5 rounded-xl text-sm font-black border-2 border-slate-200 bg-slate-50 text-slate-500 transition';
+            document.getElementById('genderBtnF').className = g === 'F' ? 'flex-1 py-2.5 rounded-xl text-sm font-black border-2 border-pink-500 bg-pink-500 text-white transition' : 'flex-1 py-2.5 rounded-xl text-sm font-black border-2 border-slate-200 bg-slate-50 text-slate-500 transition';
+        }
         function getStar(s, ac, idx = -1) { if (idx === -1) { if (s.includes(300)) return '★'; if (ac.includes(true)) return '⭐'; return ''; } if (s[idx] === 300) return '★'; if (ac[idx]) return '⭐'; return ''; }
         function exportData() { const b = new Blob([JSON.stringify({ members, history })], { type: 'application/json' }); const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = `ActiveBC_Backup.json`; a.click(); }
         function importData(event) { const f = event.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = (e) => { const d = JSON.parse(e.target.result); if (d.members) { members = d.members; history = d.history; updateDB(true); alert("데이터 복구 성공!"); } }; r.readAsText(f); }
