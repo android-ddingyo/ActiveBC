@@ -150,7 +150,18 @@
             <section class="bc-card" style="padding:24px;">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
                     <p class="sec-label">📝 점수 입력</p>
-                    <input type="date" id="gameDateInput" class="bc-input" style="width:auto;font-size:12px;padding:7px 12px;">
+                    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                        <input type="date" id="gameDateInput" class="bc-input" style="width:auto;font-size:12px;padding:7px 12px;">
+                        <button onclick="downloadScoreTemplate()" class="bc-btn" style="font-size:11px;padding:7px 12px;display:flex;align-items:center;gap:5px;color:var(--ink-2);" title="입력용 엑셀 양식 다운로드">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            양식
+                        </button>
+                        <label class="bc-btn bc-btn-primary" style="font-size:11px;padding:7px 12px;cursor:pointer;display:flex;align-items:center;gap:5px;color:#fff !important;" title="엑셀 파일로 점수 일괄 입력">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            엑셀 입력
+                            <input type="file" id="excelScoreFile" class="hidden" accept=".xlsx,.xls" onchange="importScoreFromExcel(event)">
+                        </label>
+                    </div>
                 </div>
                 <select id="memberSelector" onchange="loadScoreData()" style="width:100%;background:var(--surface-2);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;font-size:18px;font-weight:600;color:var(--ink);font-family:'DM Sans',sans-serif;outline:none;margin-bottom:16px;cursor:pointer;"></select>
                 <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px;">
@@ -378,11 +389,11 @@
             }).join('') || '-';
 
             const acNames = rData.filter(o => o.data.ac.includes(true)).map(o => o.name);
-            document.getElementById('todayACList').innerHTML = acNames.length > 0 ? acNames.map(name => `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:6px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.8);font-size:12px;font-weight:500;">⭐ ${name}</span>`).join('') : '<span style="font-size:11px;color:rgba(255,255,255,.25);text-transform:uppercase;letter-spacing:.06em;">No Record</span>';
+            document.getElementById('todayACList').innerHTML = acNames.length > 0 ? acNames.map(name => `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:6px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.8);font-size:12px;font-weight:500;"><span style='color:#FBBF24;'>★</span> ${name}</span>`).join('') : '<span style="font-size:11px;color:rgba(255,255,255,.25);text-transform:uppercase;letter-spacing:.06em;">No Record</span>';
 
             tbody.innerHTML = rData.map((obj, i) => {
                 const diff = obj.avg > 0 ? (obj.avg - obj.base).toFixed(1) : "-";
-                return `<tr style="border-bottom:1px solid var(--surface-3);transition:background .1s;" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background=''"><td style="padding:12px 14px;font-size:11px;color:var(--ink-4);font-family:'DM Mono',monospace;">${i+1}</td><td style="padding:12px 14px;text-align:left;font-weight:600;color:var(--ink);">${obj.name}${getStar(obj.data.s, obj.data.ac)}</td>${obj.data.s.map((s, idx) => `<td style="padding:12px 14px;${obj.data.ac[idx]?'background:var(--surface-2);':''} ${s===300?'color:var(--danger);font-weight:600;':''}">${s||'-'}${getStar(obj.data.s, obj.data.ac, idx)}</td>`).join('')}<td style="padding:12px 14px;background:var(--surface-2);font-weight:600;font-family:'DM Mono',monospace;font-size:15px;color:var(--ink);">${obj.total||'-'}</td><td style="padding:12px 14px;background:var(--surface-2);font-weight:600;font-family:'DM Mono',monospace;font-size:15px;color:var(--ink-2);">${obj.avg||'-'}</td><td style="padding:12px 14px;color:var(--ink-3);font-family:'DM Mono',monospace;">${obj.base}</td><td style="padding:12px 14px;font-family:'DM Mono',monospace;font-weight:500;color:${parseFloat(diff)<0?'var(--danger)':'var(--success)'};">${diff>0?'+'+diff:diff}</td></tr>`;
+                return `<tr style="border-bottom:1px solid var(--surface-3);transition:background .1s;" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background=''"><td style="padding:12px 14px;font-size:11px;color:var(--ink-4);font-family:'DM Mono',monospace;">${i+1}</td><td style="padding:12px 14px;text-align:left;font-weight:600;color:var(--ink);">${obj.name}${getStar(obj.data.s, obj.data.ac)}</td>${obj.data.s.map((s, idx) => `<td style="padding:12px 14px;${obj.data.ac[idx]?'background:#FFFBEB;':''} ${s===300?'color:var(--danger);font-weight:600;':''}">${s||'-'}${getStar(obj.data.s, obj.data.ac, idx)}</td>`).join('')}<td style="padding:12px 14px;background:var(--surface-2);font-weight:600;font-family:'DM Mono',monospace;font-size:15px;color:var(--ink);">${obj.total||'-'}</td><td style="padding:12px 14px;background:var(--surface-2);font-weight:600;font-family:'DM Mono',monospace;font-size:15px;color:var(--ink-2);">${obj.avg||'-'}</td><td style="padding:12px 14px;color:var(--ink-3);font-family:'DM Mono',monospace;">${obj.base}</td><td style="padding:12px 14px;font-family:'DM Mono',monospace;font-weight:500;color:${parseFloat(diff)<0?'var(--danger)':'var(--success)'};">${diff>0?'+'+diff:diff}</td></tr>`;
             }).join('');
         }
 
@@ -483,7 +494,22 @@
             bf.style.borderColor = g==='F' ? '#DB2777' : 'var(--border)';
             bf.style.color = g==='F' ? '#fff' : 'var(--ink-3)';
         }
-        function getStar(s, ac, idx = -1) { if (idx === -1) { if (s.includes(300)) return '★'; if (ac.includes(true)) return '⭐'; return ''; } if (s[idx] === 300) return '★'; if (ac[idx]) return '⭐'; return ''; }
+        // idx=-1: 회원명 옆 뱃지, idx>=0: 해당 게임 옆 뱃지
+        // PERFECT(300) → 빨간 ★, ALL COVER → 노란 ★
+        function getStar(s, ac, idx = -1) {
+            const PERF  = '<span style="color:#DC2626;font-size:.85em;" title="PERFECT">★</span>';
+            const AC    = '<span style="color:#D97706;font-size:.85em;" title="ALL COVER">★</span>';
+            if (idx === -1) {
+                // 회원명 옆: 퍼펙트 우선, 없으면 올커버
+                if (s.includes(300)) return PERF;
+                if (ac.some(v => v)) return AC;
+                return '';
+            }
+            // 특정 게임 옆
+            if (s[idx] === 300) return PERF;
+            if (ac[idx]) return AC;
+            return '';
+        }
         function exportData() { const b = new Blob([JSON.stringify({ members, history })], { type: 'application/json' }); const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = `ActiveBC_Backup.json`; a.click(); }
         function exportToExcel() {
             const vDate = document.getElementById('viewDateSelector').value;
@@ -546,6 +572,103 @@
             const fileName = `ActiveBC_성적표_${vDate}.xlsx`;
             XLSX.writeFile(wb, fileName);
         }
+        // ── 엑셀 점수 입력 양식 다운로드 ──
+        function downloadScoreTemplate() {
+            const date = document.getElementById('gameDateInput').value || new Date().toISOString().split('T')[0];
+            // 헤더: 순번 | 회원명 | 1G | 2G | 3G | 4G | 비고
+            const header = ['순번', '회원명', '1G', '2G', '3G', '4G', '비고'];
+            const rows = members.map((m, i) => {
+                const d = history[date] && history[date][m.name];
+                if (!d) return [i+1, m.name, 0, 0, 0, 0, ''];
+                return [
+                    i + 1,
+                    m.name,
+                    d.s[0] ? (d.ac[0] ? d.s[0] + '*' : d.s[0]) : 0,
+                    d.s[1] ? (d.ac[1] ? d.s[1] + '*' : d.s[1]) : 0,
+                    d.s[2] ? (d.ac[2] ? d.s[2] + '*' : d.s[2]) : 0,
+                    d.s[3] ? (d.ac[3] ? d.s[3] + '*' : d.s[3]) : 0,
+                    ''
+                ];
+            });
+            const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
+            ws['!cols'] = [{wch:6},{wch:12},{wch:9},{wch:9},{wch:9},{wch:9},{wch:20}];
+            // 헤더 스타일
+            ['A1','B1','C1','D1','E1','F1','G1'].forEach(addr => {
+                if (ws[addr]) ws[addr].s = { font:{bold:true}, fill:{fgColor:{rgb:'E2E8F0'}}, alignment:{horizontal:'center'} };
+            });
+            // 비고 컬럼 안내 텍스트
+            ws['G1'] = { v:'비고 (올커버: 점수뒤 * 예)180*)', t:'s',
+                s:{ font:{color:{rgb:'92400E'}}, fill:{fgColor:{rgb:'FFFBEB'}}, alignment:{horizontal:'left'} } };
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, '점수입력');
+            XLSX.writeFile(wb, `ActiveBC_점수입력양식_${date}.xlsx`);
+        }
+
+        // ── 엑셀 파일로 점수 일괄 입력 ──
+        // 양식: 순번 | 회원명 | 1G | 2G | 3G | 4G | 비고
+        // 올커버: 점수 뒤에 * 표시 (예: 257*)  /  0 또는 빈칸 = 미참여
+        function importScoreFromExcel(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const date = document.getElementById('gameDateInput').value;
+            if (!date) { alert('날짜를 먼저 선택해주세요.'); event.target.value = ''; return; }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const wb = XLSX.read(e.target.result, { type: 'binary' });
+                    const ws = wb.Sheets[wb.SheetNames[0]];
+                    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+                    if (rows.length < 2) { alert('데이터가 없습니다.'); return; }
+
+                    // 1행 헤더 확인 후 2행부터 데이터
+                    // 컬럼 위치 자동 감지: 순번(선택) | 회원명 | 1G | 2G | 3G | 4G
+                    const headerRow = rows[0].map(h => String(h).trim());
+                    const nameCol = headerRow.findIndex(h => h === '회원명');
+                    const gCols   = [1,2,3,4].map(g => headerRow.findIndex(h => h === g+'G'));
+
+                    // 헤더 감지 실패 시 기본값 (순번있음: 1번, 없음: 0번)
+                    const nc = nameCol >= 0 ? nameCol : 1;
+                    const gc = gCols.every(c => c >= 0) ? gCols : [2, 3, 4, 5];
+
+                    let imported = 0, skipped = [];
+                    rows.slice(1).forEach(row => {
+                        const name = String(row[nc] || '').trim();
+                        if (!name) return;
+                        const member = members.find(m => m.name === name);
+                        if (!member) { skipped.push(name); return; }
+
+                        const scores = [], acs = [];
+                        gc.forEach(ci => {
+                            const raw   = String(row[ci] || '').trim();
+                            const isAC  = raw.endsWith('*');
+                            const num   = parseInt(raw.replace('*', ''));
+                            const val   = isNaN(num) || num <= 0 ? 0 : Math.min(num, 300);
+                            scores.push(val);
+                            acs.push(val === 300 ? true : isAC); // 퍼펙트는 자동 올커버
+                        });
+
+                        if (!history[date]) history[date] = {};
+                        history[date][name] = { s: scores, ac: acs };
+                        imported++;
+                    });
+
+                    updateDB();
+                    loadScoreData();
+                    renderUI();
+
+                    let msg = `✅ ${imported}명 점수 입력 완료!`;
+                    if (skipped.length) msg += `\n⚠️ 미등록 회원 (${skipped.length}명): ${skipped.join(', ')}`;
+                    alert(msg);
+                } catch(err) {
+                    alert('파일 읽기 오류: ' + err.message);
+                } finally {
+                    event.target.value = '';
+                }
+            };
+            reader.readAsBinaryString(file);
+        }
+
         function importData(event) { const f = event.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = (e) => { const d = JSON.parse(e.target.result); if (d.members) { members = d.members; history = d.history; updateDB(true); alert("데이터 복구 성공!"); } }; r.readAsText(f); }
         function addNewMember() { const n = document.getElementById('newMemberName').value.trim(); let b = parseInt(document.getElementById('newMemberBase').value) || 0; if (b > 300) b = 300; const g = document.getElementById('newMemberGender').value; if (n && !members.find(m => m.name === n)) { members.push({ name: n, base: b, gender: g }); updateDB(); document.getElementById('newMemberName').value = ''; document.getElementById('newMemberBase').value = ''; } }
         function removeMember(n) { if(confirm(`${n} 회원을 삭제할까요?`)) { members = members.filter(m => m.name !== n); updateDB(); } }
