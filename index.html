@@ -426,14 +426,19 @@
             const participated = stats.filter(s => s.t > 0).sort((a,b) => b.avg - a.avg);
             const absent = stats.filter(s => s.t === 0);
             const sAwards = participated.filter(s => s.avg > s.base).sort((a,b) => (b.avg-b.base) - (a.avg-a.base)).slice(0, 3);
+            // HIGH 시상: 남성/여성 각 최고점자 1명
+            const mHighWinner = participated.filter(s => s.gender === 'M').sort((a,b) => b.h - a.h)[0];
+            const fHighWinner = participated.filter(s => s.gender === 'F').sort((a,b) => b.h - a.h)[0];
             let rank = 1;
             document.getElementById('monthlyRankBody').innerHTML = [...participated, ...absent].map((s) => {
                 const na = s.t === 0;
                 const diff = !na ? (s.avg - s.base).toFixed(1) : '-';
                 let badge = "";
-                if (!na && s.avg < s.base) badge += '<span class="text-red-500 text-[10px] mr-2">\u{1F4B8} 벌금</span>';
-                if (sAwards.find(c => c.name === s.name)) badge += '<span class="text-indigo-600 text-[10px] mr-2">\u{1F3C5} 실력상</span>';
-                if (na) badge += '<span class="text-slate-400 text-[10px]">미참여</span>';
+                if (!na && s.avg < s.base) badge += '<span style="font-size:10px;color:var(--danger);margin-right:6px;">💸 벌금</span>';
+                if (sAwards.find(c => c.name === s.name)) badge += '<span style="font-size:10px;color:#4F46E5;margin-right:6px;">🏅 실력상</span>';
+                if (mHighWinner && s.name === mHighWinner.name) badge += `<span style="font-size:10px;color:#0369A1;margin-right:6px;">🔥 HIGH(남) ${s.h}</span>`;
+                if (fHighWinner && s.name === fHighWinner.name) badge += `<span style="font-size:10px;color:#9D174D;margin-right:6px;">🔥 HIGH(여) ${s.h}</span>`;
+                if (na) badge += '<span style="font-size:10px;color:var(--ink-4);">미참여</span>';
                 const rk = na ? '-' : rank++;
                 return `<tr style="border-bottom:1px solid var(--surface-3);${na?' opacity:.35;':''}" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background=''"><td style="padding:12px 14px;font-size:11px;color:var(--ink-4);">${rk}</td><td style="padding:12px 14px;text-align:left;font-weight:600;color:var(--ink);">${s.name}</td><td style="padding:12px 14px;font-size:16px;font-weight:600;font-family:'DM Mono',monospace;color:var(--ink);">${na?'-':s.avg}</td><td style="padding:12px 14px;color:var(--ink-3);font-family:'DM Mono',monospace;">${s.base}</td><td style="padding:12px 14px;font-family:'DM Mono',monospace;font-weight:500;color:${!na&&parseFloat(diff)<0?'var(--danger)':'var(--success)'};">${!na&&diff>0?'+'+diff:diff}</td><td style="padding:12px 14px;font-size:12px;color:var(--ink-3);">${na?'-':s.v+'회'}</td><td style="padding:12px 14px;color:var(--ink-2);font-family:'DM Mono',monospace;">${na?'-':s.g+'G'}</td><td style="padding:12px 14px;text-align:left;">${badge||'-'}</td></tr>`;
             }).join('');
