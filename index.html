@@ -425,7 +425,7 @@
             });
             const participated = stats.filter(s => s.t > 0).sort((a,b) => b.avg - a.avg);
             const absent = stats.filter(s => s.t === 0);
-            const sAwards = participated.filter(s => s.avg > s.base).sort((a,b) => (b.avg-b.base) - (a.avg-a.base)).reverse().slice(0, 3);
+            const sAwards = participated.filter(s => s.avg > s.base).sort((a,b) => (b.avg-b.base) - (a.avg-a.base)).slice(0, 3);
             let rank = 1;
             document.getElementById('monthlyRankBody').innerHTML = [...participated, ...absent].map((s) => {
                 const na = s.t === 0;
@@ -725,7 +725,7 @@
             }).filter(s => s.t > 0);
             const mH = [...stats].filter(s => s.gender === 'M').sort((a,b) => b.h - a.h)[0];
             const fH = [...stats].filter(s => s.gender === 'F').sort((a,b) => b.h - a.h)[0];
-            const sA = stats.filter(s => s.avg > s.base).sort((a,b) => (b.avg-b.base) - (a.avg-a.base)).reverse().slice(0, 3);
+            const sA = stats.filter(s => s.avg > s.base).sort((a,b) => (b.avg-b.base) - (a.avg-a.base)).slice(0, 3);
             const pL = stats.filter(s => s.avg < s.base);
             document.getElementById('awardSummaryContent').innerHTML = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;"><div style="padding:24px;background:var(--surface-2);border-radius:var(--radius);border:1px solid var(--border);"><p style="font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:14px;">🔥 HIGH GAME AWARDS</p><p style="font-size:14px;font-weight:500;color:var(--ink);margin-bottom:6px;">남성: ${mH?mH.name+' <span style=\'font-family:DM Mono,monospace;color:var(--ink-2);\'>'+mH.h+'</span>':'-'}</p><p style="font-size:14px;font-weight:500;color:var(--ink);">여성: ${fH?fH.name+' <span style=\'font-family:DM Mono,monospace;color:var(--ink-2);\'>'+fH.h+'</span>':'-'}</p></div><div style="padding:24px;background:var(--surface-2);border-radius:var(--radius);border:1px solid var(--border);"><p style="font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:14px;">🏅 실력상 TOP 3</p><div>${sA.map((s,i)=>`<p style="font-size:14px;font-weight:500;color:var(--ink);margin-bottom:6px;">${i+1}위: ${s.name} <span style='color:var(--success);font-family:DM Mono,monospace;'>+${(s.avg-s.base).toFixed(1)}</span></p>`).join('')||'-'}</div></div></div><div style="padding:24px;background:var(--surface-2);border-radius:var(--radius);border:1px solid var(--border);"><p style="font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:14px;">💸 벌금 대상</p><div style="display:flex;flex-wrap:wrap;gap:8px;">${pL.map(s => `<span style="padding:5px 12px;border-radius:8px;background:var(--surface);border:1px solid var(--border);font-size:12px;font-weight:500;color:var(--danger);">${s.name} <span style='font-family:DM Mono,monospace;'>-${Math.abs(s.avg-s.base).toFixed(1)}</span></span>`).join('')||'<span style="font-size:13px;color:var(--ink-3);">없음</span>'}</div></div>`;
         }
