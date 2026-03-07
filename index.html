@@ -9,178 +9,223 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://apis.google.com/js/api.js" async defer></script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap');
-        body { font-family: 'Pretendard', sans-serif; letter-spacing: -0.025em; overflow-x: hidden; background-color: #f8fafc; }
+        :root {
+            --ink:      #1E293B;
+            --ink-2:    #475569;
+            --ink-3:    #94A3B8;
+            --ink-4:    #CBD5E1;
+            --surface:  #FFFFFF;
+            --surface-2:#F8FAFC;
+            --surface-3:#F1F5F9;
+            --border:   #E2E8F0;
+            --danger:   #DC2626;
+            --success:  #16A34A;
+            --warn-bg:  #FFFBEB;
+            --warn-border: #FDE68A;
+            --warn-text:#92400E;
+            --radius:   16px;
+            --radius-sm:10px;
+            --radius-lg:24px;
+        }
+        *, *::before, *::after { box-sizing: border-box; }
+        body { font-family: 'DM Sans', sans-serif; background: #EEF0F2; color: var(--ink); overflow-x: hidden; letter-spacing: -0.01em; }
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        .modal-overlay { background-color: rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px); }
-        .custom-scroll::-webkit-scrollbar { width: 6px; }
-        .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        
-        /* 🛠️ 모달 스크롤 및 헤더 고정 정밀 수정 */
-        .modal-main-card { display: flex; flex-direction: column; width: 100%; height: 85vh; background: white; border-radius: 40px; overflow: hidden; }
+
+        /* 스크롤바 */
+        .custom-scroll::-webkit-scrollbar { width: 5px; }
+        .custom-scroll::-webkit-scrollbar-track { background: var(--surface-2); }
+        .custom-scroll::-webkit-scrollbar-thumb { background: var(--ink-4); border-radius: 10px; }
+
+        /* 모달 구조 */
+        .modal-overlay { background: rgba(15,23,42,0.6); backdrop-filter: blur(8px); }
+        .modal-main-card { display: flex; flex-direction: column; width: 100%; height: 85vh; background: var(--surface); border-radius: var(--radius-lg); overflow: hidden; }
         .modal-header-section { flex-shrink: 0; }
-        .modal-scroll-body { flex: 1; overflow-y: auto !important; position: relative; background-color: white; }
+        .modal-scroll-body { flex: 1; overflow-y: auto !important; position: relative; background: var(--surface); }
         .modal-sticky-table { width: 100%; border-collapse: collapse; border-spacing: 0; }
-        .modal-sticky-table thead th { 
-            position: sticky !important; top: 0 !important; z-index: 70 !important; 
-            background-color: #f1f5f9 !important; border-bottom: 2px solid #cbd5e1 !important;
-            padding: 1.25rem 0.5rem; line-height: 1.2;
+        .modal-sticky-table thead th {
+            position: sticky !important; top: 0 !important; z-index: 70 !important;
+            background: var(--surface-2) !important; border-bottom: 1px solid var(--border) !important;
+            padding: 1rem 0.75rem; font-size: 10px; font-weight: 600;
+            letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3);
         }
 
-        /* 🏆 리더보드 컬러 아이덴티티 */
-        .sum-rank-1 { background: #1e3a8a !important; color: #ffffff !important; }
-        .sum-rank-2 { background: #3b82f6 !important; color: #ffffff !important; }
-        .sum-rank-3 { background: #93c5fd !important; color: #1e3a8a !important; }
-        .high-rank-1 { background: #9d174d !important; color: #ffffff !important; }
-        .high-rank-2 { background: #db2777 !important; color: #ffffff !important; }
-        .high-rank-3 { background: #fbcfe8 !important; color: #9d174d !important; }
+        /* 리더보드 */
+        .sum-rank-1  { background: var(--ink)       !important; color: #fff !important; border-color: var(--ink) !important; }
+        .sum-rank-2  { background: var(--surface-3) !important; color: var(--ink) !important; }
+        .sum-rank-3  { background: var(--surface-2) !important; color: var(--ink-2) !important; }
+        .high-rank-1 { background: var(--ink)       !important; color: #fff !important; border-color: var(--ink) !important; }
+        .high-rank-2 { background: var(--surface-3) !important; color: var(--ink) !important; }
+        .high-rank-3 { background: var(--surface-2) !important; color: var(--ink-2) !important; }
 
-        .dot-pulse { width: 10px; height: 10px; border-radius: 50%; animation: indicator-pulse 2s infinite; }
-        @keyframes indicator-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.5; } }
-        #loginGate { position: fixed; inset: 0; z-index: 9999; background: linear-gradient(135deg, #4338ca 0%, #1e1b4b 100%); display: flex; align-items: center; justify-content: center; padding: 20px; }
+        /* 온라인 dot */
+        .dot-pulse { width: 7px; height: 7px; border-radius: 50%; animation: dp 2s infinite; }
+        @keyframes dp { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.4);opacity:.5} }
+
+        /* 로그인 */
+        #loginGate { position: fixed; inset: 0; z-index: 9999; background: var(--surface-2); display: flex; align-items: center; justify-content: center; padding: 20px; }
+
+        /* 공통 카드 */
+        .bc-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); }
+
+        /* 공통 라벨 */
+        .sec-label { font-size: 10px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+
+        /* 공통 인풋 */
+        .bc-input { background: var(--surface-2); border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 13px; color: var(--ink); font-family: 'DM Sans', sans-serif; outline: none; transition: border-color .15s; width: 100%; }
+        .bc-input:focus { border-color: var(--ink-3); }
+
+        /* 공통 버튼 */
+        .bc-btn { padding: 9px 16px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 500; cursor: pointer; border: 1.5px solid var(--border); background: var(--surface); color: var(--ink-2); font-family: 'DM Sans', sans-serif; transition: all .15s; }
+        .bc-btn:hover { background: var(--surface-2); }
+        .bc-btn-primary { background: var(--ink); color: #fff; border-color: var(--ink); }
+        .bc-btn-primary:hover { opacity: .85; }
+
+        /* 숫자 폰트 */
+        .mono { font-family: 'DM Mono', monospace; }
     </style>
 </head>
-<body class="p-4 md:p-6 text-slate-900 font-black">
+<body class="p-4 md:p-6">
 
     <div id="loginGate">
-        <div class="bg-white p-12 rounded-[48px] shadow-2xl w-full max-w-[420px] text-center">
-            <div class="text-7xl mb-6">🎳</div>
-            <h1 class="text-4xl font-black text-slate-900 uppercase mb-1">ACTIVE BC</h1>
-            <p class="text-indigo-600 font-black text-xs tracking-widest uppercase mb-10">Scrolling Fixed v61</p>
-            <div class="space-y-4">
-                <input type="password" id="pwInput" placeholder="PASSWORD" class="w-full bg-slate-50 border-2 border-slate-100 p-5 rounded-3xl text-center text-2xl outline-none focus:border-indigo-500 transition-all font-black" onkeypress="if(event.keyCode==13) login()">
-                <button onclick="login()" class="w-full bg-indigo-600 text-white py-5 rounded-3xl text-xl shadow-xl hover:bg-indigo-700 active:scale-95 transition-all font-black">LOGIN</button>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:52px 44px;width:100%;max-width:380px;text-align:center;">
+            <p style="font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);margin-bottom:8px;">Active BC</p>
+            <h1 style="font-size:30px;font-weight:600;letter-spacing:-.03em;color:var(--ink);margin-bottom:40px;">🎳 볼링 클럽</h1>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+                <input type="password" id="pwInput" placeholder="· · · ·" style="width:100%;background:var(--surface-2);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:14px 18px;font-size:22px;text-align:center;letter-spacing:.3em;color:var(--ink);font-family:'DM Mono',monospace;outline:none;" onkeypress="if(event.keyCode==13) login()">
+                <button onclick="login()" style="width:100%;background:var(--ink);color:#fff;border:none;border-radius:var(--radius-sm);padding:14px;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;">LOGIN</button>
             </div>
-            <p id="loginMsg" class="text-red-500 text-sm font-bold mt-6 opacity-0">비밀번호가 올바르지 않습니다.</p>
+            <p id="loginMsg" style="color:var(--danger);font-size:12px;font-weight:500;margin-top:16px;opacity:0;">비밀번호가 올바르지 않습니다.</p>
         </div>
     </div>
 
-    <div id="mainApp" class="max-w-6xl mx-auto space-y-6 pb-24" style="display: none;">
+    <div id="mainApp" class="max-w-6xl mx-auto pb-24" style="display:none;gap:12px;flex-direction:column;">
         
-        <header class="bg-white p-6 rounded-[32px] shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-6">
-            <div class="flex items-center gap-4">
-                <h1 class="text-3xl font-black text-slate-900 uppercase tracking-tighter">🎳 액티브 BC</h1>
-                <div id="cloudStatus" class="px-4 py-1.5 rounded-full bg-slate-100 text-slate-400 border text-[11px] flex items-center gap-2">
-                    <span id="statusDot" class="dot-pulse bg-slate-300"></span><span id="statusText">OFFLINE</span>
+        <header class="bc-card" style="padding:18px 24px;display:flex;flex-direction:column;gap:14px;margin-bottom:12px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+                <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                    <h1 style="font-size:18px;font-weight:600;letter-spacing:-.02em;color:var(--ink);">🎳 액티브 BC</h1>
+                    <div id="cloudStatus" style="display:flex;align-items:center;gap:6px;padding:4px 12px;border-radius:99px;border:1px solid var(--border);background:var(--surface-2);font-size:11px;font-weight:500;color:var(--ink-3);letter-spacing:.04em;text-transform:uppercase;">
+                        <span id="statusDot" class="dot-pulse" style="background:var(--ink-4);"></span><span id="statusText">OFFLINE</span>
+                    </div>
+                    <div id="dirtyBadge" style="display:none;align-items:center;gap:5px;padding:4px 12px;border-radius:99px;border:1px solid var(--warn-border);background:var(--warn-bg);font-size:11px;font-weight:600;color:var(--warn-text);">
+                        <span>●</span><span>미저장</span>
+                    </div>
                 </div>
-                <div id="dirtyBadge" class="px-3 py-1.5 rounded-full bg-amber-100 text-amber-600 border border-amber-200 text-[11px] font-black hidden items-center gap-1">
-                    <span>●</span><span>미저장</span>
-                </div>
-            </div>
-            <div class="flex flex-wrap justify-center gap-2">
-                <button id="authBtn" onclick="handleAuthClick()" class="bg-white border-2 border-indigo-600 text-indigo-600 px-4 py-2 rounded-2xl text-xs flex items-center gap-2 hover:bg-indigo-50 transition font-black">동기화</button>
-                <button onclick="openModal('awardSummaryModal')" class="bg-emerald-600 text-white px-5 py-2.5 rounded-2xl text-sm shadow-sm hover:bg-emerald-700 transition font-black">🏆 시상 요약</button>
-                <button onclick="openModal('monthlyModal')" class="bg-indigo-600 text-white px-5 py-2.5 rounded-2xl text-sm shadow-sm transition font-black">📅 월간 랭킹</button>
-                <button onclick="openModal('annualModal')" class="bg-amber-500 text-white px-5 py-2.5 rounded-2xl text-sm shadow-sm transition font-black">👑 연간 랭킹</button>
-                <div class="flex gap-1">
-                    <button onclick="exportData()" class="bg-white px-4 py-2.5 rounded-2xl text-sm border border-slate-200 hover:bg-slate-50 transition">백업</button>
-                    <label class="bg-slate-800 text-white px-4 py-2.5 rounded-2xl text-sm cursor-pointer hover:bg-slate-900 transition flex items-center">📥 복구 <input type="file" id="importFile" class="hidden" accept=".json" onchange="importData(event)"></label>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
+                    <button id="authBtn" onclick="handleAuthClick()" class="bc-btn" style="font-size:11px;">동기화</button>
+                    <button onclick="openModal('awardSummaryModal')" class="bc-btn">🏆 시상 요약</button>
+                    <button onclick="openModal('monthlyModal')" class="bc-btn">📅 월간 랭킹</button>
+                    <button onclick="openModal('annualModal')" class="bc-btn">👑 연간 랭킹</button>
+                    <button onclick="exportData()" class="bc-btn">백업</button>
+                    <label class="bc-btn bc-btn-primary" style="cursor:pointer;">📥 복구 <input type="file" id="importFile" class="hidden" accept=".json" onchange="importData(event)"></label>
                 </div>
             </div>
         </header>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 font-black">
-            <section class="bg-white p-6 rounded-[32px] shadow-sm border border-slate-200">
-                <h2 class="text-xl mb-5 flex items-center justify-between text-slate-800 uppercase font-black">👤 회원 <span id="memberCountBadge" class="text-xs bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full">0명</span></h2>
-                <div class="space-y-2 mb-5">
-                    <div class="flex gap-2">
-                        <input type="text" id="newMemberName" placeholder="성함" class="flex-1 bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-black">
-                        <input type="number" id="newMemberBase" placeholder="평가" class="w-16 bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-sm text-center font-black">
+        <div style="display:grid;grid-template-columns:1fr 2fr;gap:12px;margin-bottom:12px;" class="grid-resp-cols">
+            <section class="bc-card" style="padding:24px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+                    <p class="sec-label">👤 회원 관리</p>
+                    <span id="memberCountBadge" style="font-size:11px;font-weight:600;color:var(--ink-3);background:var(--surface-2);border:1px solid var(--border);border-radius:99px;padding:3px 10px;">0명</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;">
+                    <div style="display:flex;gap:8px;">
+                        <input type="text" id="newMemberName" placeholder="성함" class="bc-input" style="flex:1;min-width:0;">
+                        <input type="number" id="newMemberBase" placeholder="AVG" class="bc-input" style="width:60px;flex:0 0 60px;text-align:center;">
                     </div>
-                    <div class="flex gap-2">
-                        <div class="flex gap-1 flex-1">
-                            <button id="genderBtnM" onclick="selectGender('M')" class="flex-1 py-2.5 rounded-xl text-sm font-black border-2 border-indigo-500 bg-indigo-500 text-white transition">남성</button>
-                            <button id="genderBtnF" onclick="selectGender('F')" class="flex-1 py-2.5 rounded-xl text-sm font-black border-2 border-slate-200 bg-slate-50 text-slate-500 transition">여성</button>
-                        </div>
-                        <button onclick="addNewMember()" class="flex-1 bg-slate-800 text-white py-2.5 rounded-xl text-sm hover:bg-slate-900 transition font-black">회원 추가</button>
+                    <div style="display:flex;gap:6px;">
+                        <button id="genderBtnM" onclick="selectGender('M')" style="flex:1;padding:9px 8px;border-radius:var(--radius-sm);border:1.5px solid var(--ink);background:var(--ink);color:#fff;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;">남성</button>
+                        <button id="genderBtnF" onclick="selectGender('F')" style="flex:1;padding:9px 8px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface-2);color:var(--ink-3);font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;">여성</button>
+                        <button onclick="addNewMember()" class="bc-btn bc-btn-primary" style="flex:1;padding:9px 8px;font-size:12px;">회원 추가</button>
                     </div>
                 </div>
                 <input type="hidden" id="newMemberGender" value="M">
-                <div id="memberBadgeList" class="flex flex-wrap gap-2 overflow-y-auto pt-4 border-t border-slate-100 max-h-48 custom-scroll"></div>
+                <div id="memberBadgeList" class="custom-scroll" style="display:flex;flex-wrap:wrap;gap:6px;overflow-y:auto;padding-top:16px;border-top:1px solid var(--border);max-height:180px;"></div>
             </section>
 
-            <section class="bg-white p-6 rounded-[32px] shadow-sm border border-slate-200 md:col-span-2">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3">
-                    <h2 class="text-xl text-slate-800 font-black uppercase">📝 점수 입력</h2>
-                    <input type="date" id="gameDateInput" class="bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-sm outline-none font-bold">
+            <section class="bc-card" style="padding:24px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+                    <p class="sec-label">📝 점수 입력</p>
+                    <input type="date" id="gameDateInput" class="bc-input" style="width:auto;font-size:12px;padding:7px 12px;">
                 </div>
-                <div class="space-y-5">
-                    <select id="memberSelector" onchange="loadScoreData()" class="w-full bg-indigo-50 border border-indigo-100 p-4 rounded-2xl text-2xl text-indigo-900 font-black cursor-pointer"></select>
-                    <div class="grid grid-cols-4 gap-4 text-center">
-                        <script>for(let i=1; i<=4; i++) { document.write(`<div><p class="text-xs text-slate-400 mb-2 font-black">${i}G</p><input type="number" id="g${i}" class="w-full text-center font-black text-4xl border-b-4 border-slate-100 focus:border-indigo-500 outline-none py-2 bg-transparent transition-all" max="300" tabindex="${i}"></div>`); }</script>
-                    </div>
-                    <div class="grid grid-cols-4 gap-4 bg-slate-50 p-3 rounded-2xl border border-slate-100 text-center font-black">
-                        <script>for(let i=1; i<=4; i++) { document.write(`<label class="flex flex-col items-center gap-2 cursor-pointer py-1 group"><input type="checkbox" id="ac${i}" class="w-6 h-6 rounded-lg border-slate-300 text-indigo-600 transition" tabindex="${i+4}"><span class="text-[10px] font-bold text-slate-500 group-hover:text-indigo-600 transition uppercase">AC ${i}</span></label>`); }</script>
-                    </div>
-                    <button onclick="saveAndGoNext()" class="w-full bg-indigo-600 text-white py-5 rounded-2xl text-xl shadow-lg hover:bg-indigo-700 active:scale-[0.98]">점수 저장 후 다음회원 →</button>
+                <select id="memberSelector" onchange="loadScoreData()" style="width:100%;background:var(--surface-2);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;font-size:18px;font-weight:600;color:var(--ink);font-family:'DM Sans',sans-serif;outline:none;margin-bottom:16px;cursor:pointer;"></select>
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px;">
+                    <script>for(let i=1; i<=4; i++) { document.write(`<div style="text-align:center;"><p style="font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--ink-3);margin-bottom:8px;text-transform:uppercase;">${i}G</p><input type="number" id="g${i}" style="width:100%;text-align:center;font-size:30px;font-weight:500;font-family:'DM Mono',monospace;border:none;border-bottom:2px solid var(--border);background:transparent;color:var(--ink);padding:6px 0;outline:none;transition:border-color .15s;" max="300" tabindex="${i}" onfocus="this.style.borderBottomColor='var(--ink)'" onblur="this.style.borderBottomColor='var(--border)'"></div>`); }</script>
                 </div>
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;background:var(--surface-2);padding:12px;border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:16px;text-align:center;">
+                    <script>for(let i=1; i<=4; i++) { document.write(`<label style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="ac${i}" style="width:18px;height:18px;border-radius:5px;accent-color:var(--ink);cursor:pointer;" tabindex="${i+4}"><span style="font-size:10px;font-weight:600;color:var(--ink-3);letter-spacing:.06em;text-transform:uppercase;">AC ${i}</span></label>`); }</script>
+                </div>
+                <button onclick="saveAndGoNext()" class="bc-btn bc-btn-primary" style="width:100%;padding:15px;font-size:14px;font-weight:500;letter-spacing:.02em;border-radius:var(--radius-sm);">점수 저장 후 다음 회원 →</button>
             </section>
         </div>
+        <style>.grid-resp-cols { } @media(max-width:768px){.grid-resp-cols{grid-template-columns:1fr !important;}}</style>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 font-black">
-            <section class="bg-white p-6 rounded-[32px] shadow-sm border border-slate-200 md:col-span-2 space-y-8">
+        <div style="display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:12px;" class="grid-resp-cols">
+            <section class="bc-card" style="padding:24px;display:flex;flex-direction:column;gap:28px;">
                 <div>
-                    <h2 class="text-xs text-indigo-600 mb-4 uppercase tracking-widest font-black border-l-4 border-indigo-600 pl-2">🏆 실시간 당일 합산 TOP 5</h2>
-                    <div id="leaderboardSumList" class="grid grid-cols-5 gap-3 text-center"></div>
+                    <p class="sec-label" style="margin-bottom:14px;">🏆 합산 TOP 5</p>
+                    <div id="leaderboardSumList" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;text-align:center;"></div>
                 </div>
                 <div>
-                    <h2 class="text-xs text-pink-600 mb-4 uppercase tracking-widest font-black border-l-4 border-pink-600 pl-2">🔥 실시간 당일 HIGH 점수 TOP 5</h2>
-                    <div id="leaderboardHighList" class="grid grid-cols-5 gap-3 text-center"></div>
+                    <p class="sec-label" style="margin-bottom:14px;">HIGH 점수 TOP 5</p>
+                    <div id="leaderboardHighList" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;text-align:center;"></div>
                 </div>
             </section>
-            
-            <div class="flex flex-col gap-6">
-                <section class="bg-slate-900 p-6 rounded-[32px] shadow-xl text-white flex flex-col justify-between border border-slate-800 h-1/2">
+
+            <div style="display:flex;flex-direction:column;gap:12px;">
+                <section style="background:var(--ink);border-radius:var(--radius-lg);padding:24px;flex:1;display:flex;flex-direction:column;justify-content:space-between;">
                     <div>
-                        <h2 class="text-xs text-emerald-400 font-black uppercase tracking-widest mb-4">✨ Today's ALL COVER</h2>
-                        <div id="todayACList" class="flex flex-wrap gap-2 text-xl font-black content-start min-h-[60px]"></div>
+                        <p class="sec-label" style="color:rgba(255,255,255,.4);margin-bottom:14px;">✨ Today's ALL COVER</p>
+                        <div id="todayACList" style="display:flex;flex-wrap:wrap;gap:6px;min-height:50px;"></div>
                     </div>
-                    <p class="text-[10px] text-slate-500">* 영광의 올커버 회원 명단</p>
+                    <p style="font-size:10px;color:rgba(255,255,255,.25);margin-top:12px;">* 올커버 달성 회원</p>
                 </section>
-                
-                <section class="bg-amber-500 p-6 rounded-[32px] shadow-xl text-white flex flex-col justify-between border border-amber-400 h-1/2">
+                <section class="bc-card" style="padding:24px;flex:1;display:flex;flex-direction:column;justify-content:space-between;">
                     <div>
-                        <h2 class="text-xs text-white opacity-80 font-black uppercase tracking-widest mb-4">🎲 팀 편성 도구</h2>
-                        <p class="text-sm font-black text-amber-900">오늘의 밸런스 있는 팀 구성</p>
+                        <p class="sec-label" style="margin-bottom:10px;">🎲 팀 편성</p>
+                        <p style="font-size:13px;color:var(--ink-2);margin-bottom:16px;">평균 기반 균형 배분</p>
                     </div>
-                    <button onclick="splitTeams()" class="w-full bg-white text-amber-600 py-3 rounded-2xl font-black text-sm shadow-md hover:bg-amber-50 active:scale-95 transition">편성 실행</button>
+                    <button onclick="splitTeams()" class="bc-btn bc-btn-primary" style="width:100%;padding:12px;font-size:13px;">편성 실행</button>
                 </section>
             </div>
         </div>
 
-        <section class="bg-white p-6 rounded-[32px] shadow-sm border border-slate-200 overflow-hidden w-full font-black">
-            <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4"><h2 class="text-2xl text-slate-900 tracking-tight uppercase font-black font-black">📊 공식 월례회 성적표</h2><input type="date" id="viewDateSelector" onchange="renderUI()" class="bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500 transition"></div>
-            <div class="overflow-x-auto rounded-2xl border border-slate-100 max-h-[600px] overflow-y-auto custom-scroll">
-                <table class="w-full border-collapse text-center min-w-[1050px]">
-                    <thead class="sticky top-0 z-10 bg-slate-50 font-black text-slate-400 text-[11px] uppercase border-b-2">
-                        <tr><th class="p-4 bg-slate-50">순번</th><th class="p-4 text-left bg-slate-50">회원명</th><th class="p-4 bg-slate-50">1G</th><th class="p-4 bg-slate-50">2G</th><th class="p-4 bg-slate-50">3G</th><th class="p-4 bg-slate-50">4G</th><th class="p-4 bg-indigo-50 text-indigo-600 font-black">TOTAL</th><th class="p-4 bg-indigo-50 text-indigo-800 font-black">AVG</th><th class="p-4 bg-slate-100 text-slate-800">평가</th><th class="p-4 bg-slate-100">Diff</th></tr>
+        <section class="bc-card" style="overflow:hidden;margin-bottom:12px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:20px 24px 16px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:10px;">
+                <p class="sec-label">📊 공식 월례회 성적표</p>
+                <input type="date" id="viewDateSelector" onchange="renderUI()" class="bc-input" style="width:auto;font-size:12px;padding:7px 12px;">
+            </div>
+            <div class="custom-scroll" style="overflow-x:auto;max-height:560px;overflow-y:auto;">
+                <table style="width:100%;border-collapse:collapse;text-align:center;min-width:900px;font-size:13px;">
+                    <thead>
+                        <tr><th style="padding:12px 14px;text-align:center;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:5;">순번</th><th style="padding:12px 14px;text-align:left;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:5;">회원명</th><th style="padding:12px 14px;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:5;">1G</th><th style="padding:12px 14px;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:5;">2G</th><th style="padding:12px 14px;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:5;">3G</th><th style="padding:12px 14px;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:5;">4G</th><th style="padding:12px 14px;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);border-bottom:1px solid var(--border);background:var(--surface-2);position:sticky;top:0;z-index:5;">TOTAL</th><th style="padding:12px 14px;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);border-bottom:1px solid var(--border);background:var(--surface-2);position:sticky;top:0;z-index:5;">AVG</th><th style="padding:12px 14px;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:5;">평가</th><th style="padding:12px 14px;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:5;">DIFF</th></tr>
                     </thead>
-                    <tbody id="tableBody" class="text-sm font-bold text-slate-700 bg-white font-black"></tbody>
+                    <tbody id="tableBody" style="font-size:13px;color:var(--ink-2);"></tbody>
                 </table>
             </div>
         </section>
 
-        <section class="bg-white p-10 rounded-[32px] shadow-sm border border-slate-200 w-full font-black">
-            <h2 class="text-xl font-black text-slate-800 mb-8 uppercase tracking-tight">📈 에버리지 변화 분석</h2>
-            <select id="chartUserSelect" onchange="drawChart()" class="bg-slate-50 border border-slate-200 p-4 rounded-2xl text-sm font-bold w-full md:w-80 mb-6 outline-none focus:border-indigo-500 transition font-black"></select>
-            <div class="h-80 w-full"><canvas id="avgChart"></canvas></div>
+        <section class="bc-card" style="padding:24px;margin-bottom:12px;">
+            <p class="sec-label" style="margin-bottom:16px;">📈 에버리지 변화 분석</p>
+            <select id="chartUserSelect" onchange="drawChart()" class="bc-input" style="width:100%;max-width:280px;margin-bottom:20px;font-size:13px;cursor:pointer;"></select>
+            <div style="height:280px;width:100%;"><canvas id="avgChart"></canvas></div>
         </section>
     </div>
 
     <div id="awardSummaryModal" class="fixed inset-0 z-[100] items-center justify-center p-4" style="display:none;">
         <div class="absolute inset-0 modal-overlay" onclick="closeModal('awardSummaryModal')"></div>
-        <div class="modal-main-card max-w-2xl border-2 border-slate-300 shadow-2xl relative">
-            <div class="bg-emerald-600 p-8 text-white flex justify-between items-center modal-header-section font-black"><h3 class="text-3xl tracking-tighter uppercase font-black">🏆 시상 및 벌금 현황</h3><button onclick="closeModal('awardSummaryModal')" class="text-5xl font-light">&times;</button></div>
+        <div class="modal-main-card max-w-2xl shadow-2xl relative">
+            <div class="modal-header-section" style="display:flex;align-items:center;justify-content:space-between;padding:22px 28px;border-bottom:1px solid var(--border);"><div><p style="font-size:17px;font-weight:600;letter-spacing:-.02em;color:var(--ink);">🏆 시상 및 벌금 현황</p></div><button onclick="closeModal('awardSummaryModal')" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);font-size:16px;color:var(--ink-3);cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">✕</button></div>
             <div class="modal-scroll-body custom-scroll p-10 space-y-10 font-black" id="awardSummaryContent"></div>
         </div>
     </div>
 
     <div id="monthlyModal" class="fixed inset-0 z-[100] items-center justify-center p-4" style="display:none;">
         <div class="absolute inset-0 modal-overlay" onclick="closeModal('monthlyModal')"></div>
-        <div class="modal-main-card max-w-6xl border-2 border-slate-300 shadow-2xl relative">
-            <div class="bg-indigo-600 p-8 text-white flex justify-between items-center modal-header-section font-black"><h3 class="text-3xl italic tracking-tighter font-black">📅 <span id="modalMonthTitle"></span>월 누적 통계</h3><button onclick="closeModal('monthlyModal')" class="text-5xl font-light">&times;</button></div>
+        <div class="modal-main-card max-w-6xl shadow-2xl relative">
+            <div class="modal-header-section" style="display:flex;align-items:center;justify-content:space-between;padding:22px 28px;border-bottom:1px solid var(--border);"><div><p style="font-size:17px;font-weight:600;letter-spacing:-.02em;color:var(--ink);">📅 <span id="modalMonthTitle"></span>월 누적 통계</p><p style="font-size:12px;color:var(--ink-3);margin-top:3px;">월간 성적 랭킹</p></div><button onclick="closeModal('monthlyModal')" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);font-size:16px;color:var(--ink-3);cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">✕</button></div>
             <div class="modal-scroll-body custom-scroll">
                 <table class="modal-sticky-table text-center font-black">
                     <thead>
@@ -203,8 +248,8 @@
 
     <div id="annualModal" class="fixed inset-0 z-[100] items-center justify-center p-4" style="display:none;">
         <div class="absolute inset-0 modal-overlay" onclick="closeModal('annualModal')"></div>
-        <div class="modal-main-card max-w-4xl border-2 border-slate-300 shadow-2xl relative font-black">
-            <div class="bg-amber-500 p-8 text-white flex justify-between items-center modal-header-section font-black"><h3 class="text-3xl tracking-tighter uppercase font-black font-black">👑 연간 명예의 전당</h3><button onclick="closeModal('annualModal')" class="text-5xl font-light">&times;</button></div>
+        <div class="modal-main-card max-w-4xl shadow-2xl relative font-black">
+            <div class="modal-header-section" style="display:flex;align-items:center;justify-content:space-between;padding:22px 28px;border-bottom:1px solid var(--border);"><div><p style="font-size:17px;font-weight:600;letter-spacing:-.02em;color:var(--ink);">👑 연간 명예의 전당</p></div><button onclick="closeModal('annualModal')" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);font-size:16px;color:var(--ink-3);cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">✕</button></div>
             <div class="modal-scroll-body custom-scroll">
                 <table class="modal-sticky-table text-center font-black">
                     <thead>
@@ -218,8 +263,8 @@
 
     <div id="teamModal" class="fixed inset-0 z-[100] items-center justify-center p-4" style="display:none;">
         <div class="absolute inset-0 modal-overlay" onclick="closeModal('teamModal')"></div>
-        <div class="modal-main-card max-w-2xl border-2 border-slate-300 shadow-2xl relative font-black">
-            <div class="bg-amber-500 p-8 text-white flex justify-between items-center modal-header-section font-black"><h3 class="text-3xl tracking-tighter uppercase font-black">🎲 팀 편성 결과</h3><button onclick="closeModal('teamModal')" class="text-5xl font-light">&times;</button></div>
+        <div class="modal-main-card max-w-2xl shadow-2xl relative font-black">
+            <div class="modal-header-section" style="display:flex;align-items:center;justify-content:space-between;padding:22px 28px;border-bottom:1px solid var(--border);"><div><p style="font-size:17px;font-weight:600;letter-spacing:-.02em;color:var(--ink);">🎲 팀 편성 결과</p></div><button onclick="closeModal('teamModal')" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);font-size:16px;color:var(--ink-3);cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">✕</button></div>
             <div class="modal-scroll-body custom-scroll p-10 space-y-4 font-black" id="teamResultList"></div>
         </div>
     </div>
@@ -265,11 +310,11 @@
             document.getElementById('memberCountBadge').innerText = `${members.length}명`;
             document.getElementById('memberBadgeList').innerHTML = members.map(m => {
                 const gLabel = m.gender === 'F' ? '여' : '남';
-                const gColor = m.gender === 'F' ? 'text-pink-500' : 'text-blue-500';
-                return `<div class="bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 flex items-center shadow-sm text-[11px] font-black gap-1">
-                    <span class="cursor-pointer text-slate-700 hover:text-indigo-600 transition" onclick="editMemberInfo('${m.name}')">${m.name}(${m.base})</span>
-                    <button onclick="toggleGender('${m.name}')" class="font-black ${gColor} hover:opacity-70 transition">${gLabel}</button>
-                    <button onclick="removeMember('${m.name}')" class="ml-1 text-slate-300 hover:text-red-500 font-black">×</button>
+                const gColor = m.gender === 'F' ? '#DB2777' : 'var(--ink-3)';
+                return `<div style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);font-size:11px;font-weight:500;color:var(--ink-2);">
+                    <span style="cursor:pointer;" onclick="editMemberInfo('${m.name}')">${m.name}(${m.base})</span>
+                    <button onclick="toggleGender('${m.name}')" style="color:${gColor};font-weight:600;font-size:10px;background:none;border:none;cursor:pointer;padding:0;">${gLabel}</button>
+                    <button onclick="removeMember('${m.name}')" style="color:var(--ink-4);font-size:13px;background:none;border:none;cursor:pointer;padding:0;margin-left:2px;">×</button>
                 </div>`;
             }).join('');
             
@@ -288,22 +333,22 @@
             const topSum = [...rData].filter(o => o.total > 0).sort((a,b) => b.total - a.total).slice(0, 5);
             document.getElementById('leaderboardSumList').innerHTML = topSum.map((o, i) => {
                 let cls = i==0 ? 'sum-rank-1' : (i==1 ? 'sum-rank-2' : (i==2 ? 'sum-rank-3' : 'bg-slate-100 text-indigo-600'));
-                return `<div class="p-3 rounded-2xl border ${cls} shadow-sm"><p class="text-[9px] uppercase opacity-70">합산 ${i+1}위</p><p class="text-sm truncate w-full font-black">${o.name}</p><p class="text-xs font-black">${o.total}</p></div>`;
+                return `<div style="padding:12px 8px;border-radius:10px;border:1px solid var(--border);text-align:center;" class="${cls}"><p style="font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;opacity:.6;margin-bottom:4px;">합산 ${i+1}위</p><p style="font-size:12px;font-weight:600;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${o.name}</p><p style="font-size:13px;font-weight:500;font-family:'DM Mono',monospace;">${o.total}</p></div>`;
             }).join('') || '-';
 
             // 🔥 HIGH 순위 (Pink 고대비)
             const topHigh = [...rData].filter(o => o.high > 0).sort((a,b) => b.high - a.high).slice(0, 5);
             document.getElementById('leaderboardHighList').innerHTML = topHigh.map((o, i) => {
                 let cls = i==0 ? 'high-rank-1' : (i==1 ? 'high-rank-2' : (i==2 ? 'high-rank-3' : 'bg-slate-100 text-pink-600'));
-                return `<div class="p-3 rounded-2xl border ${cls} shadow-sm"><p class="text-[9px] uppercase opacity-70">최고 ${i+1}위</p><p class="text-sm truncate w-full font-black">${o.name}</p><p class="text-xs font-black">${o.high}</p></div>`;
+                return `<div style="padding:12px 8px;border-radius:10px;border:1px solid var(--border);text-align:center;" class="${cls}"><p style="font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;opacity:.6;margin-bottom:4px;">HIGH ${i+1}위</p><p style="font-size:12px;font-weight:600;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${o.name}</p><p style="font-size:13px;font-weight:500;font-family:'DM Mono',monospace;">${o.high}</p></div>`;
             }).join('') || '-';
 
             const acNames = rData.filter(o => o.data.ac.includes(true)).map(o => o.name);
-            document.getElementById('todayACList').innerHTML = acNames.length > 0 ? acNames.map(name => `<span class="bg-emerald-500/20 px-3 py-1 rounded-xl text-emerald-400 font-black">⭐ ${name}</span>`).join('') : '<span class="text-slate-500 text-xs uppercase">No Record</span>';
+            document.getElementById('todayACList').innerHTML = acNames.length > 0 ? acNames.map(name => `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:6px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.8);font-size:12px;font-weight:500;">⭐ ${name}</span>`).join('') : '<span style="font-size:11px;color:rgba(255,255,255,.25);text-transform:uppercase;letter-spacing:.06em;">No Record</span>';
 
             tbody.innerHTML = rData.map((obj, i) => {
                 const diff = obj.avg > 0 ? (obj.avg - obj.base).toFixed(1) : "-";
-                return `<tr class="border-b border-slate-50 hover:bg-indigo-50/10 transition font-black"><td class="p-4 text-[11px] text-slate-300 font-mono">${i+1}</td><td class="p-4 text-left text-slate-900">${obj.name}${getStar(obj.data.s, obj.data.ac)}</td>${obj.data.s.map((s, idx) => `<td class="p-4 ${obj.data.ac[idx]?'bg-indigo-50/50':''} ${s===300?'text-red-600':''}">${s||'-'}${getStar(obj.data.s, obj.data.ac, idx)}</td>`).join('')}<td class="p-4 bg-indigo-50/30 text-indigo-700 text-xl font-black">${obj.total||'-'}</td><td class="p-4 bg-indigo-50/50 text-indigo-900 text-xl font-black">${obj.avg||'-'}</td><td class="p-4 bg-slate-100 text-slate-500 font-mono">${obj.base}</td><td class="p-4 ${parseFloat(diff)<0?'text-red-500':'text-blue-500'} font-mono">${diff>0?'+'+diff:diff}</td></tr>`;
+                return `<tr style="border-bottom:1px solid var(--surface-3);transition:background .1s;" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background=''"><td style="padding:12px 14px;font-size:11px;color:var(--ink-4);font-family:'DM Mono',monospace;">${i+1}</td><td style="padding:12px 14px;text-align:left;font-weight:600;color:var(--ink);">${obj.name}${getStar(obj.data.s, obj.data.ac)}</td>${obj.data.s.map((s, idx) => `<td style="padding:12px 14px;${obj.data.ac[idx]?'background:var(--surface-2);':''} ${s===300?'color:var(--danger);font-weight:600;':''}">${s||'-'}${getStar(obj.data.s, obj.data.ac, idx)}</td>`).join('')}<td style="padding:12px 14px;background:var(--surface-2);font-weight:600;font-family:'DM Mono',monospace;font-size:15px;color:var(--ink);">${obj.total||'-'}</td><td style="padding:12px 14px;background:var(--surface-2);font-weight:600;font-family:'DM Mono',monospace;font-size:15px;color:var(--ink-2);">${obj.avg||'-'}</td><td style="padding:12px 14px;color:var(--ink-3);font-family:'DM Mono',monospace;">${obj.base}</td><td style="padding:12px 14px;font-family:'DM Mono',monospace;font-weight:500;color:${parseFloat(diff)<0?'var(--danger)':'var(--success)'};">${diff>0?'+'+diff:diff}</td></tr>`;
             }).join('');
         }
 
@@ -327,7 +372,7 @@
                 if (sAwards.find(c => c.name === s.name)) badge += '<span class="text-indigo-600 text-[10px] mr-2">\u{1F3C5} 실력상</span>';
                 if (na) badge += '<span class="text-slate-400 text-[10px]">미참여</span>';
                 const rk = na ? '-' : rank++;
-                return `<tr class="border-b hover:bg-slate-50 transition font-black${na ? ' opacity-40' : ''}"><td class="p-5 text-slate-400 italic">${rk}</td><td class="p-5 text-left">${s.name}</td><td class="p-5 text-2xl text-indigo-700">${na ? '-' : s.avg}</td><td class="p-5 text-slate-400 font-mono">${s.base}</td><td class="p-5 font-mono ${!na && parseFloat(diff)<0 ? 'text-red-500' : 'text-blue-500'} font-black">${!na && diff>0 ? '+'+diff : diff}</td><td class="p-5 text-sm text-slate-500">${na ? '-' : s.v+'회'}</td><td class="p-5 text-indigo-900">${na ? '-' : s.g+'G'}</td><td class="p-5 text-left font-black">${badge || '-'}</td></tr>`;
+                return `<tr style="border-bottom:1px solid var(--surface-3);${na?' opacity:.35;':''}" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background=''"><td style="padding:12px 14px;font-size:11px;color:var(--ink-4);">${rk}</td><td style="padding:12px 14px;text-align:left;font-weight:600;color:var(--ink);">${s.name}</td><td style="padding:12px 14px;font-size:16px;font-weight:600;font-family:'DM Mono',monospace;color:var(--ink);">${na?'-':s.avg}</td><td style="padding:12px 14px;color:var(--ink-3);font-family:'DM Mono',monospace;">${s.base}</td><td style="padding:12px 14px;font-family:'DM Mono',monospace;font-weight:500;color:${!na&&parseFloat(diff)<0?'var(--danger)':'var(--success)'};">${!na&&diff>0?'+'+diff:diff}</td><td style="padding:12px 14px;font-size:12px;color:var(--ink-3);">${na?'-':s.v+'회'}</td><td style="padding:12px 14px;color:var(--ink-2);font-family:'DM Mono',monospace;">${na?'-':s.g+'G'}</td><td style="padding:12px 14px;text-align:left;">${badge||'-'}</td></tr>`;
             }).join('');
         }
 
@@ -345,8 +390,8 @@
                     clearDirty();
                     if (!silent) {
                         const btn = document.getElementById('authBtn');
-                        btn.innerText = '✅ 저장됨'; btn.classList.add('bg-emerald-50','border-emerald-500','text-emerald-600');
-                        setTimeout(() => { btn.innerText = '동기화'; btn.classList.remove('bg-emerald-50','border-emerald-500','text-emerald-600'); }, 2000);
+                        btn.innerText = '✅ 저장됨'; btn.style.background='#F0FDF4'; btn.style.borderColor='#BBF7D0'; btn.style.color='var(--success)';
+                        setTimeout(() => { btn.innerText = '동기화'; btn.style.background=''; btn.style.borderColor='var(--border)'; btn.style.color='var(--ink-2)'; }, 2000);
                     }
                 }
             } catch (err) { if (!silent) alert("❌ 오류 발생"); }
@@ -354,10 +399,13 @@
 
         function initGIS() { try { tokenClient = google.accounts.oauth2.initTokenClient({ client_id: CLIENT_ID, scope: SCOPES, callback: (res) => { accessToken = res.access_token; updateCloudStatus(true); syncFromDrive(); } }); } catch(e){} }
         function handleAuthClick() { if (!accessToken) tokenClient.requestAccessToken({prompt:'consent'}); else syncToDrive(false); }
-        function updateCloudStatus(on) { 
+        function updateCloudStatus(on) {
             const box = document.getElementById('cloudStatus');
-            box.className = on ? "px-4 py-1.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 text-[11px] flex items-center gap-2 font-black" : "px-4 py-1.5 rounded-full bg-slate-100 text-slate-400 border text-[11px] flex items-center gap-2 font-black";
-            document.getElementById('statusDot').className = on ? "dot-pulse bg-emerald-500 text-emerald-500" : "dot-pulse bg-slate-300 text-slate-300";
+            box.style.borderColor = on ? '#BBF7D0' : 'var(--border)';
+            box.style.background = on ? '#F0FDF4' : 'var(--surface-2)';
+            box.style.color = on ? 'var(--success)' : 'var(--ink-3)';
+            const dot = document.getElementById('statusDot');
+            dot.style.background = on ? 'var(--success)' : 'var(--ink-4)';
             document.getElementById('statusText').innerText = on ? "ONLINE" : "OFFLINE";
         }
         function updateDB(sync = true) { localStorage.setItem('ABC_M_V61', JSON.stringify(members)); localStorage.setItem('ABC_H_V61', JSON.stringify(history)); renderUI(); if (sync && accessToken) { markDirty(); scheduleDebouncedSync(); } }
@@ -369,8 +417,13 @@
         function selectGender(g) {
             _selectedGender = g;
             document.getElementById('newMemberGender').value = g;
-            document.getElementById('genderBtnM').className = g === 'M' ? 'flex-1 py-2.5 rounded-xl text-sm font-black border-2 border-indigo-500 bg-indigo-500 text-white transition' : 'flex-1 py-2.5 rounded-xl text-sm font-black border-2 border-slate-200 bg-slate-50 text-slate-500 transition';
-            document.getElementById('genderBtnF').className = g === 'F' ? 'flex-1 py-2.5 rounded-xl text-sm font-black border-2 border-pink-500 bg-pink-500 text-white transition' : 'flex-1 py-2.5 rounded-xl text-sm font-black border-2 border-slate-200 bg-slate-50 text-slate-500 transition';
+            const bm = document.getElementById('genderBtnM'), bf = document.getElementById('genderBtnF');
+            bm.style.background = g==='M' ? 'var(--ink)' : 'var(--surface-2)';
+            bm.style.borderColor = g==='M' ? 'var(--ink)' : 'var(--border)';
+            bm.style.color = g==='M' ? '#fff' : 'var(--ink-3)';
+            bf.style.background = g==='F' ? '#DB2777' : 'var(--surface-2)';
+            bf.style.borderColor = g==='F' ? '#DB2777' : 'var(--border)';
+            bf.style.color = g==='F' ? '#fff' : 'var(--ink-3)';
         }
         function getStar(s, ac, idx = -1) { if (idx === -1) { if (s.includes(300)) return '★'; if (ac.includes(true)) return '⭐'; return ''; } if (s[idx] === 300) return '★'; if (ac[idx]) return '⭐'; return ''; }
         function exportData() { const b = new Blob([JSON.stringify({ members, history })], { type: 'application/json' }); const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = `ActiveBC_Backup.json`; a.click(); }
@@ -379,7 +432,7 @@
         function removeMember(n) { if(confirm(`${n} 회원을 삭제할까요?`)) { members = members.filter(m => m.name !== n); updateDB(); } }
         function saveAndGoNext() { const d = document.getElementById('gameDateInput').value, n = document.getElementById('memberSelector').value; if(!n) return; const s = [], ac = []; for(let i=1; i<=4; i++) { s.push(parseInt(document.getElementById(`g${i}`).value) || 0); ac.push(document.getElementById(`ac${i}`).checked); } if(!history[d]) history[d] = {}; history[d][n] = { s, ac }; updateDB(); const idx = members.findIndex(m => m.name === n); if(idx < members.length - 1) { document.getElementById('memberSelector').value = members[idx+1].name; loadScoreData(); } }
         function loadScoreData() { const d = document.getElementById('gameDateInput').value, n = document.getElementById('memberSelector').value; const e = (history[d] && history[d][n]) || { s: ['', '', '', ''], ac: [0, 0, 0, 0] }; [1, 2, 3, 4].forEach(i => { document.getElementById(`g${i}`).value = e.s[i - 1]; document.getElementById(`ac${i}`).checked = !!e.ac[i - 1]; }); }
-        function drawChart() { const n=document.getElementById('chartUserSelect').value; if(!n) return; const ctx=document.getElementById('avgChart').getContext('2d'); const l=[],d=[]; let ts=0,tc=0; Object.keys(history).sort().forEach(dt=>{ if(history[dt][n]){ const g=history[dt][n].s.filter(v=>v>0); if(g.length>0){ts+=g.reduce((a,b)=>a+b,0);tc+=g.length;l.push(dt);d.push((ts/tc).toFixed(1));} } }); if(chartObj) chartObj.destroy(); chartObj = new Chart(ctx, { type:'line', data:{labels:l, datasets:[{label:'AVG', data:d, borderColor:'#4f46e5', tension:0.3, fill:true, backgroundColor:'rgba(79,70,229,0.05)'}]}, options:{maintainAspectRatio:false, plugins:{legend:{display:false}}}}); }
+        function drawChart() { const n=document.getElementById('chartUserSelect').value; if(!n) return; const ctx=document.getElementById('avgChart').getContext('2d'); const l=[],d=[]; let ts=0,tc=0; Object.keys(history).sort().forEach(dt=>{ if(history[dt][n]){ const g=history[dt][n].s.filter(v=>v>0); if(g.length>0){ts+=g.reduce((a,b)=>a+b,0);tc+=g.length;l.push(dt);d.push((ts/tc).toFixed(1));} } }); if(chartObj) chartObj.destroy(); chartObj = new Chart(ctx, { type:'line', data:{labels:l, datasets:[{label:'AVG', data:d, borderColor:'var(--ink)', tension:0.3, fill:true, backgroundColor:'rgba(30,41,59,0.04)'}]}, options:{maintainAspectRatio:false, plugins:{legend:{display:false}}}}); }
         function calcAvg(n) { let s=0, c=0; for(let d in history) if(history[d][n]){ const v=history[d][n].s.filter(g=>g>0); s+=v.reduce((a,b)=>a+b,0); c+=v.length; } return c>0?(s/c).toFixed(1):"0.0"; }
         function renderAwardSummary() {
             const target = document.getElementById('viewDateSelector').value.substring(0, 7);
@@ -392,7 +445,7 @@
             const fH = [...stats].filter(s => s.gender === 'F').sort((a,b) => b.h - a.h)[0];
             const sA = stats.filter(s => s.avg > s.base).sort((a,b) => (b.avg-b.base) - (a.avg-a.base)).reverse().slice(0, 3);
             const pL = stats.filter(s => s.avg < s.base);
-            document.getElementById('awardSummaryContent').innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 gap-8 font-black uppercase"><div class="p-8 bg-indigo-50 rounded-[32px] border border-indigo-100 shadow-sm"><span class="block text-indigo-600 mb-4 text-xs tracking-widest font-black uppercase">🔥 HIGH GAME AWARDS</span><p class="text-lg">Male: ${mH?mH.name+' ('+mH.h+')':'-'}</p><p class="text-lg">Female: ${fH?fH.name+' ('+fH.h+')':'-'}</p></div><div class="p-8 bg-emerald-50 rounded-[32px] border border-emerald-100 shadow-sm"><span class="block text-emerald-600 mb-4 text-xs tracking-widest font-black uppercase">🏅 Monthly Skill TOP 3</span><div class="space-y-2 text-lg font-black uppercase">${sA.map((s,i)=>`<p>${i+1}위: ${s.name} (+${(s.avg-s.base).toFixed(1)})</p>`).join('')||'-'}</div></div></div><div class="p-8 bg-red-50 rounded-[32px] border border-red-100 font-black"><span class="block text-red-600 mb-4 text-xs uppercase tracking-widest font-black uppercase">💸 Penalty List</span><div class="flex flex-wrap gap-2 uppercase font-black font-black">${pL.map(s => `<span class="bg-white px-4 py-2 rounded-2xl text-red-700 font-black text-sm border border-red-200">${s.name} (-${Math.abs(s.avg-s.base).toFixed(1)})</span>`).join('')||'None'}</div></div>`;
+            document.getElementById('awardSummaryContent').innerHTML = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;"><div style="padding:24px;background:var(--surface-2);border-radius:var(--radius-lg);border:1px solid var(--border);"><p style="font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:14px;">🔥 HIGH GAME AWARDS</p><p style="font-size:14px;font-weight:500;color:var(--ink);margin-bottom:6px;">남성: ${mH?mH.name+' <span style=\'font-family:DM Mono,monospace;color:var(--ink-2);\'>'+mH.h+'</span>':'-'}</p><p style="font-size:14px;font-weight:500;color:var(--ink);">여성: ${fH?fH.name+' <span style=\'font-family:DM Mono,monospace;color:var(--ink-2);\'>'+fH.h+'</span>':'-'}</p></div><div style="padding:24px;background:var(--surface-2);border-radius:var(--radius-lg);border:1px solid var(--border);"><p style="font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:14px;">🏅 실력상 TOP 3</p><div>${sA.map((s,i)=>`<p style="font-size:14px;font-weight:500;color:var(--ink);margin-bottom:6px;">${i+1}위: ${s.name} <span style='color:var(--success);font-family:DM Mono,monospace;'>+${(s.avg-s.base).toFixed(1)}</span></p>`).join('')||'-'}</div></div></div><div style="padding:24px;background:var(--surface-2);border-radius:var(--radius-lg);border:1px solid var(--border);"><p style="font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:14px;">💸 벌금 대상</p><div style="display:flex;flex-wrap:wrap;gap:8px;">${pL.map(s => `<span style="padding:5px 12px;border-radius:8px;background:var(--surface);border:1px solid var(--border);font-size:12px;font-weight:500;color:var(--danger);">${s.name} <span style='font-family:DM Mono,monospace;'>-${Math.abs(s.avg-s.base).toFixed(1)}</span></span>`).join('')||'<span style="font-size:13px;color:var(--ink-3);">없음</span>'}</div></div>`;
         }
         function renderAnnualRank() {
             let stats = members.map(m => {
@@ -408,10 +461,10 @@
                 const na = s.avg === 0;
                 const diff = !na ? (s.avg - s.base).toFixed(1) : '-';
                 const rk = na ? '-' : annRank++;
-                return `<tr class="border-b font-bold hover:bg-slate-50 transition${na?' opacity-40':''}"><td class="p-5 text-slate-300 font-mono font-black">${rk}</td><td class="p-5 text-left font-black">${s.name}</td><td class="p-5 text-2xl text-amber-600 font-black">${na?'-':s.avg}</td><td class="p-5 text-slate-400 font-mono font-black">${s.base}</td><td class="p-5 font-mono ${!na&&parseFloat(diff)<0?'text-red-500':'text-blue-500'} font-black">${!na&&diff>0?'+'+diff:diff}</td><td class="p-5 text-slate-400 font-black">${na?'미참여':s.g+'G'}</td></tr>`;
+                return `<tr style="border-bottom:1px solid var(--surface-3);${na?'opacity:.35;':''}" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background=''"><td style="padding:12px 14px;font-size:11px;color:var(--ink-4);font-family:'DM Mono',monospace;">${rk}</td><td style="padding:12px 14px;text-align:left;font-weight:600;color:var(--ink);">${s.name}</td><td style="padding:12px 14px;font-size:16px;font-weight:600;font-family:'DM Mono',monospace;color:var(--ink);">${na?'-':s.avg}</td><td style="padding:12px 14px;color:var(--ink-3);font-family:'DM Mono',monospace;">${s.base}</td><td style="padding:12px 14px;font-family:'DM Mono',monospace;font-weight:500;color:${!na&&parseFloat(diff)<0?'var(--danger)':'var(--success)'};">${!na&&diff>0?'+'+diff:diff}</td><td style="padding:12px 14px;color:var(--ink-3);font-family:'DM Mono',monospace;">${na?'미참여':s.g+'G'}</td></tr>`;
             }).join('');
         }
-        function splitTeams() { const n=parseInt(prompt("몇 팀으로 나눌까요?", 2)); if(!n) return; const active=members.map(m=>({name:m.name, avg:parseFloat(calcAvg(m.name))})).sort((a,b)=>b.avg-a.avg); const teams=Array.from({length:n},()=>[]); active.forEach((m,i)=>{ const idx=Math.floor(i/n)%2===0?(i%n):(n-1-(i%n)); teams[idx].push(`${m.name}(${m.avg})`); }); document.getElementById('teamResultList').innerHTML = teams.map((t,i)=>`<div class="p-6 bg-slate-50 border-2 rounded-[32px] shadow-sm font-black"><span class="text-indigo-600 block mb-2 text-xs uppercase">TEAM ${i+1}</span><p class="text-slate-800 text-lg">${t.join(', ')}</p></div>`).join(''); openModal('teamModal'); }
+        function splitTeams() { const n=parseInt(prompt("몇 팀으로 나눌까요?", 2)); if(!n) return; const active=members.map(m=>({name:m.name, avg:parseFloat(calcAvg(m.name))})).sort((a,b)=>b.avg-a.avg); const teams=Array.from({length:n},()=>[]); active.forEach((m,i)=>{ const idx=Math.floor(i/n)%2===0?(i%n):(n-1-(i%n)); teams[idx].push(`${m.name}(${m.avg})`); }); document.getElementById('teamResultList').innerHTML = teams.map((t,i)=>`<div style="padding:20px;background:var(--surface-2);border-radius:var(--radius-md);border:1px solid var(--border);"><p style="font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:10px;">TEAM ${i+1}</p><p style="font-size:14px;font-weight:500;color:var(--ink);">${t.join(', ')}</p></div>`).join(''); openModal('teamModal'); }
         async function syncFromDrive() { try { const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${syncFileName}' and trashed=false`, { headers: { 'Authorization': `Bearer ${accessToken}` } }); const list = await res.json(); if (list.files && list.files.length > 0) { const dataRes = await fetch(`https://www.googleapis.com/drive/v3/files/${list.files[0].id}?alt=media`, { headers: { 'Authorization': `Bearer ${accessToken}` } }); const dData = await dataRes.json(); if (confirm("Cloud 데이터를 불러올까요?")) { members = dData.members; history = dData.history; updateDB(false); alert("완료!"); } } } catch (err) {} }
         // ── Dirty Flag + Debounce 저장 로직 ──
         let _isDirty = false;
@@ -421,17 +474,17 @@
         function markDirty() {
             _isDirty = true;
             const badge = document.getElementById('dirtyBadge');
-            if (badge) { badge.classList.remove('hidden'); badge.classList.add('flex'); }
+            if (badge) { badge.style.display = 'flex'; }
             const btn = document.getElementById('authBtn');
-            if (btn) { btn.classList.add('border-amber-500','text-amber-600'); btn.classList.remove('border-indigo-600','text-indigo-600'); }
+            if (btn) { btn.style.borderColor = 'var(--warn-border)'; btn.style.color = 'var(--warn-text)'; }
         }
         function clearDirty() {
             _isDirty = false;
             if (_debounceTimer) { clearTimeout(_debounceTimer); _debounceTimer = null; }
             const badge = document.getElementById('dirtyBadge');
-            if (badge) { badge.classList.add('hidden'); badge.classList.remove('flex'); }
+            if (badge) { badge.style.display = 'none'; }
             const btn = document.getElementById('authBtn');
-            if (btn) { btn.classList.remove('border-amber-500','text-amber-600'); btn.classList.add('border-indigo-600','text-indigo-600'); }
+            if (btn) { btn.style.borderColor = 'var(--border)'; btn.style.color = 'var(--ink-2)'; }
         }
         function scheduleDebouncedSync() {
             if (_debounceTimer) clearTimeout(_debounceTimer);
