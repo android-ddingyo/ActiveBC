@@ -12,35 +12,38 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
-            --ink:      #1E293B;
-            --ink-2:    #475569;
-            --ink-3:    #94A3B8;
+            --ink:      #1E3A5F;
+            --ink-2:    #334E68;
+            --ink-3:    #64748B;
             --ink-4:    #CBD5E1;
             --surface:  #FFFFFF;
-            --surface-2:#F8FAFC;
-            --surface-3:#F1F5F9;
+            --surface-2:#F4F6F9;
+            --surface-3:#EBF0F7;
             --border:   #E2E8F0;
+            --accent:   #2563EB;
+            --accent-h: #1D4ED8;
+            --accent-bg:#EFF6FF;
             --danger:   #DC2626;
             --success:  #16A34A;
             --warn-bg:  #FFFBEB;
             --warn-border: #FDE68A;
             --warn-text:#92400E;
-            --radius:   16px;
-            --radius-sm:10px;
-            --radius-lg:24px;
+            --radius:   12px;
+            --radius-sm:8px;
+            --radius-lg:16px;
         }
         *, *::before, *::after { box-sizing: border-box; }
-        body { font-family: 'DM Sans', sans-serif; background: #EEF0F2; color: var(--ink); overflow-x: hidden; letter-spacing: -0.01em; }
+        body { font-family: 'DM Sans', sans-serif; background: #F0F2F5; color: var(--ink); overflow-x: hidden; letter-spacing: -0.01em; }
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
         /* 스크롤바 */
         .custom-scroll::-webkit-scrollbar { width: 5px; }
-        .custom-scroll::-webkit-scrollbar-track { background: var(--surface-2); }
+        .custom-scroll::-webkit-scrollbar-track { background: #F0F2F5; }
         .custom-scroll::-webkit-scrollbar-thumb { background: var(--ink-4); border-radius: 10px; }
 
         /* 모달 구조 */
-        .modal-overlay { background: rgba(15,23,42,0.6); backdrop-filter: blur(8px); }
-        .modal-main-card { display: flex; flex-direction: column; width: 100%; height: 85vh; background: var(--surface); border-radius: var(--radius-lg); overflow: hidden; }
+        .modal-overlay { background: rgba(15,23,42,0.5); backdrop-filter: blur(6px); }
+        .modal-main-card { display: flex; flex-direction: column; width: 100%; height: 85vh; background: var(--surface); border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,.15); }
         .modal-header-section { flex-shrink: 0; }
         .modal-scroll-body { flex: 1; overflow-y: auto !important; position: relative; background: var(--surface); }
         .modal-sticky-table { width: 100%; border-collapse: collapse; border-spacing: 0; }
@@ -52,10 +55,10 @@
         }
 
         /* 리더보드 */
-        .sum-rank-1  { background: var(--ink)       !important; color: #fff !important; border-color: var(--ink) !important; }
+        .sum-rank-1  { background: var(--accent)    !important; color: #fff !important; border-color: var(--accent) !important; }
         .sum-rank-2  { background: var(--surface-3) !important; color: var(--ink) !important; }
         .sum-rank-3  { background: var(--surface-2) !important; color: var(--ink-2) !important; }
-        .high-rank-1 { background: var(--ink)       !important; color: #fff !important; border-color: var(--ink) !important; }
+        .high-rank-1 { background: var(--accent)    !important; color: #fff !important; border-color: var(--accent) !important; }
         .high-rank-2 { background: var(--surface-3) !important; color: var(--ink) !important; }
         .high-rank-3 { background: var(--surface-2) !important; color: var(--ink-2) !important; }
 
@@ -67,7 +70,7 @@
         #loginGate { position: fixed; inset: 0; z-index: 9999; background: var(--surface-2); display: flex; align-items: center; justify-content: center; padding: 20px; }
 
         /* 공통 카드 */
-        .bc-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); }
+        .bc-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: 0 1px 4px rgba(0,0,0,.05); }
 
         /* 공통 라벨 */
         .sec-label { font-size: 10px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
@@ -79,8 +82,8 @@
         /* 공통 버튼 */
         .bc-btn { padding: 9px 16px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 500; cursor: pointer; border: 1.5px solid var(--border); background: var(--surface); color: var(--ink-2); font-family: 'DM Sans', sans-serif; transition: all .15s; }
         .bc-btn:hover { background: var(--surface-2); }
-        .bc-btn-primary { background: var(--ink); color: #fff; border-color: var(--ink); }
-        .bc-btn-primary:hover { opacity: .85; }
+        .bc-btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+        .bc-btn-primary:hover { background: var(--accent-h); border-color: var(--accent-h); }
 
         /* 숫자 폰트 */
         .mono { font-family: 'DM Mono', monospace; }
@@ -89,23 +92,23 @@
 <body class="p-4 md:p-6">
 
     <div id="loginGate">
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:52px 44px;width:100%;max-width:380px;text-align:center;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:52px 44px;width:100%;max-width:380px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.08);">
             <p style="font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);margin-bottom:8px;">Active BC</p>
             <h1 style="font-size:30px;font-weight:600;letter-spacing:-.03em;color:var(--ink);margin-bottom:40px;">🎳 볼링 클럽</h1>
             <div style="display:flex;flex-direction:column;gap:10px;">
                 <input type="password" id="pwInput" placeholder="· · · ·" style="width:100%;background:var(--surface-2);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:14px 18px;font-size:22px;text-align:center;letter-spacing:.3em;color:var(--ink);font-family:'DM Mono',monospace;outline:none;" onkeypress="if(event.keyCode==13) login()">
-                <button onclick="login()" style="width:100%;background:var(--ink);color:#fff;border:none;border-radius:var(--radius-sm);padding:14px;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;">LOGIN</button>
+                <button onclick="login()" style="width:100%;background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);padding:14px;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;">LOGIN</button>
             </div>
             <p id="loginMsg" style="color:var(--danger);font-size:12px;font-weight:500;margin-top:16px;opacity:0;">비밀번호가 올바르지 않습니다.</p>
         </div>
     </div>
 
-    <div id="mainApp" class="max-w-6xl mx-auto pb-24" style="display:none;gap:12px;flex-direction:column;">
+    <div id="mainApp" class="max-w-6xl mx-auto pb-24" style="display:flex;flex-direction:column;gap:12px;">
         
-        <header class="bc-card" style="padding:18px 24px;display:flex;flex-direction:column;gap:14px;margin-bottom:12px;">
+        <header class="bc-card" style="padding:16px 24px;display:flex;flex-direction:column;gap:14px;margin-bottom:12px;border-radius:var(--radius-lg);box-shadow:0 1px 4px rgba(0,0,0,.06);">
             <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
                 <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-                    <h1 style="font-size:18px;font-weight:600;letter-spacing:-.02em;color:var(--ink);">🎳 액티브 BC</h1>
+                    <h1 style="font-size:17px;font-weight:700;letter-spacing:-.02em;color:var(--ink);">🎳 액티브 BC</h1>
                     <div id="cloudStatus" style="display:flex;align-items:center;gap:6px;padding:4px 12px;border-radius:99px;border:1px solid var(--border);background:var(--surface-2);font-size:11px;font-weight:500;color:var(--ink-3);letter-spacing:.04em;text-transform:uppercase;">
                         <span id="statusDot" class="dot-pulse" style="background:var(--ink-4);"></span><span id="statusText">OFFLINE</span>
                     </div>
@@ -114,10 +117,10 @@
                     </div>
                 </div>
                 <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
-                    <button id="authBtn" onclick="handleAuthClick()" class="bc-btn" style="font-size:11px;">동기화</button>
-                    <button onclick="openModal('awardSummaryModal')" class="bc-btn">🏆 시상 요약</button>
-                    <button onclick="openModal('monthlyModal')" class="bc-btn">📅 월간 랭킹</button>
-                    <button onclick="openModal('annualModal')" class="bc-btn">👑 연간 랭킹</button>
+                    <button id="authBtn" onclick="handleAuthClick()" class="bc-btn" style="font-size:11px;color:var(--accent);border-color:var(--accent);">동기화</button>
+                    <button onclick="openModal('awardSummaryModal')" class="bc-btn" style="color:var(--ink-2);">🏆 시상 요약</button>
+                    <button onclick="openModal('monthlyModal')" class="bc-btn" style="color:var(--ink-2);">📅 월간 랭킹</button>
+                    <button onclick="openModal('annualModal')" class="bc-btn" style="color:var(--ink-2);">👑 연간 랭킹</button>
                     <button onclick="exportData()" class="bc-btn">백업</button>
                     <label class="bc-btn bc-btn-primary" style="cursor:pointer;">📥 복구 <input type="file" id="importFile" class="hidden" accept=".json" onchange="importData(event)"></label>
                 </div>
@@ -128,7 +131,7 @@
             <section class="bc-card" style="padding:24px;">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
                     <p class="sec-label">👤 회원 관리</p>
-                    <span id="memberCountBadge" style="font-size:11px;font-weight:600;color:var(--ink-3);background:var(--surface-2);border:1px solid var(--border);border-radius:99px;padding:3px 10px;">0명</span>
+                    <span id="memberCountBadge" style="font-size:11px;font-weight:600;color:var(--accent);background:var(--accent-bg);border:1px solid #BFDBFE;border-radius:99px;padding:3px 10px;">0명</span>
                 </div>
                 <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;">
                     <div style="display:flex;gap:8px;">
@@ -136,7 +139,7 @@
                         <input type="number" id="newMemberBase" placeholder="AVG" class="bc-input" style="width:60px;flex:0 0 60px;text-align:center;">
                     </div>
                     <div style="display:flex;gap:6px;">
-                        <button id="genderBtnM" onclick="selectGender('M')" style="flex:1;padding:9px 8px;border-radius:var(--radius-sm);border:1.5px solid var(--ink);background:var(--ink);color:#fff;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;">남성</button>
+                        <button id="genderBtnM" onclick="selectGender('M')" style="flex:1;padding:9px 8px;border-radius:var(--radius-sm);border:1.5px solid var(--accent);background:var(--accent);color:#fff;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;">남성</button>
                         <button id="genderBtnF" onclick="selectGender('F')" style="flex:1;padding:9px 8px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface-2);color:var(--ink-3);font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;">여성</button>
                         <button onclick="addNewMember()" class="bc-btn bc-btn-primary" style="flex:1;padding:9px 8px;font-size:12px;">회원 추가</button>
                     </div>
@@ -157,7 +160,7 @@
                 <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;background:var(--surface-2);padding:12px;border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:16px;text-align:center;">
                     <script>for(let i=1; i<=4; i++) { document.write(`<label style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="ac${i}" style="width:18px;height:18px;border-radius:5px;accent-color:var(--ink);cursor:pointer;" tabindex="${i+4}"><span style="font-size:10px;font-weight:600;color:var(--ink-3);letter-spacing:.06em;text-transform:uppercase;">AC ${i}</span></label>`); }</script>
                 </div>
-                <button onclick="saveAndGoNext()" class="bc-btn bc-btn-primary" style="width:100%;padding:15px;font-size:14px;font-weight:500;letter-spacing:.02em;border-radius:var(--radius-sm);">점수 저장 후 다음 회원 →</button>
+                <button onclick="saveAndGoNext()" class="bc-btn bc-btn-primary" style="width:100%;padding:15px;font-size:14px;font-weight:600;letter-spacing:.01em;border-radius:var(--radius-sm);box-shadow:0 2px 8px rgba(37,99,235,.25);">점수 저장 후 다음 회원 →</button>
             </section>
         </div>
         <style>.grid-resp-cols { } @media(max-width:768px){.grid-resp-cols{grid-template-columns:1fr !important;}}</style>
@@ -175,7 +178,7 @@
             </section>
 
             <div style="display:flex;flex-direction:column;gap:12px;">
-                <section style="background:var(--ink);border-radius:var(--radius-lg);padding:24px;flex:1;display:flex;flex-direction:column;justify-content:space-between;">
+                <section style="background:var(--ink);border-radius:var(--radius-lg);padding:24px;flex:1;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 2px 8px rgba(30,58,95,.15);">
                     <div>
                         <p class="sec-label" style="color:rgba(255,255,255,.4);margin-bottom:14px;">✨ Today's ALL COVER</p>
                         <div id="todayACList" style="display:flex;flex-wrap:wrap;gap:6px;min-height:50px;"></div>
@@ -187,7 +190,7 @@
                         <p class="sec-label" style="margin-bottom:10px;">🎲 팀 편성</p>
                         <p style="font-size:13px;color:var(--ink-2);margin-bottom:16px;">평균 기반 균형 배분</p>
                     </div>
-                    <button onclick="splitTeams()" class="bc-btn bc-btn-primary" style="width:100%;padding:12px;font-size:13px;">편성 실행</button>
+                    <button onclick="splitTeams()" class="bc-btn bc-btn-primary" style="width:100%;padding:12px;font-size:13px;box-shadow:0 2px 6px rgba(37,99,235,.2);">편성 실행</button>
                 </section>
             </div>
         </div>
@@ -200,7 +203,7 @@
             <div class="custom-scroll" style="overflow-x:auto;max-height:560px;overflow-y:auto;">
                 <table style="width:100%;border-collapse:collapse;text-align:center;min-width:900px;font-size:13px;">
                     <thead>
-                        <tr><th style="padding:12px 14px;text-align:center;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:5;">순번</th><th style="padding:12px 14px;text-align:left;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:5;">회원명</th><th style="padding:12px 14px;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:5;">1G</th><th style="padding:12px 14px;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:5;">2G</th><th style="padding:12px 14px;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:5;">3G</th><th style="padding:12px 14px;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:5;">4G</th><th style="padding:12px 14px;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);border-bottom:1px solid var(--border);background:var(--surface-2);position:sticky;top:0;z-index:5;">TOTAL</th><th style="padding:12px 14px;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);border-bottom:1px solid var(--border);background:var(--surface-2);position:sticky;top:0;z-index:5;">AVG</th><th style="padding:12px 14px;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:5;">평가</th><th style="padding:12px 14px;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:5;">DIFF</th></tr>
+                        <tr><th style="padding:12px 14px;text-align:center;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:5;">순번</th><th style="padding:12px 14px;text-align:left;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:5;">회원명</th><th style="padding:12px 14px;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:5;">1G</th><th style="padding:12px 14px;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:5;">2G</th><th style="padding:12px 14px;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:5;">3G</th><th style="padding:12px 14px;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:5;">4G</th><th style="padding:12px 14px;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);border-bottom:1px solid var(--border);background:var(--accent-bg);position:sticky;top:0;z-index:5;">TOTAL</th><th style="padding:12px 14px;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);border-bottom:1px solid var(--border);background:var(--accent-bg);position:sticky;top:0;z-index:5;">AVG</th><th style="padding:12px 14px;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:5;">평가</th><th style="padding:12px 14px;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:5;">DIFF</th></tr>
                     </thead>
                     <tbody id="tableBody" style="font-size:13px;color:var(--ink-2);"></tbody>
                 </table>
@@ -217,7 +220,7 @@
     <div id="awardSummaryModal" class="fixed inset-0 z-[100] items-center justify-center p-4" style="display:none;">
         <div class="absolute inset-0 modal-overlay" onclick="closeModal('awardSummaryModal')"></div>
         <div class="modal-main-card max-w-2xl shadow-2xl relative">
-            <div class="modal-header-section" style="display:flex;align-items:center;justify-content:space-between;padding:22px 28px;border-bottom:1px solid var(--border);"><div><p style="font-size:17px;font-weight:600;letter-spacing:-.02em;color:var(--ink);">🏆 시상 및 벌금 현황</p></div><button onclick="closeModal('awardSummaryModal')" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);font-size:16px;color:var(--ink-3);cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">✕</button></div>
+            <div class="modal-header-section" style="display:flex;align-items:center;justify-content:space-between;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--surface);"><div><p style="font-size:17px;font-weight:600;letter-spacing:-.02em;color:var(--ink);">🏆 시상 및 벌금 현황</p></div><button onclick="closeModal('awardSummaryModal')" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);font-size:16px;color:var(--ink-3);cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">✕</button></div>
             <div class="modal-scroll-body custom-scroll p-10 space-y-10 font-black" id="awardSummaryContent"></div>
         </div>
     </div>
@@ -225,7 +228,7 @@
     <div id="monthlyModal" class="fixed inset-0 z-[100] items-center justify-center p-4" style="display:none;">
         <div class="absolute inset-0 modal-overlay" onclick="closeModal('monthlyModal')"></div>
         <div class="modal-main-card max-w-6xl shadow-2xl relative">
-            <div class="modal-header-section" style="display:flex;align-items:center;justify-content:space-between;padding:22px 28px;border-bottom:1px solid var(--border);"><div><p style="font-size:17px;font-weight:600;letter-spacing:-.02em;color:var(--ink);">📅 <span id="modalMonthTitle"></span>월 누적 통계</p><p style="font-size:12px;color:var(--ink-3);margin-top:3px;">월간 성적 랭킹</p></div><button onclick="closeModal('monthlyModal')" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);font-size:16px;color:var(--ink-3);cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">✕</button></div>
+            <div class="modal-header-section" style="display:flex;align-items:center;justify-content:space-between;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--surface);"><div><p style="font-size:17px;font-weight:600;letter-spacing:-.02em;color:var(--ink);">📅 <span id="modalMonthTitle"></span>월 누적 통계</p><p style="font-size:12px;color:var(--ink-3);margin-top:3px;">월간 성적 랭킹</p></div><button onclick="closeModal('monthlyModal')" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);font-size:16px;color:var(--ink-3);cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">✕</button></div>
             <div class="modal-scroll-body custom-scroll">
                 <table class="modal-sticky-table text-center font-black">
                     <thead>
@@ -249,7 +252,7 @@
     <div id="annualModal" class="fixed inset-0 z-[100] items-center justify-center p-4" style="display:none;">
         <div class="absolute inset-0 modal-overlay" onclick="closeModal('annualModal')"></div>
         <div class="modal-main-card max-w-4xl shadow-2xl relative font-black">
-            <div class="modal-header-section" style="display:flex;align-items:center;justify-content:space-between;padding:22px 28px;border-bottom:1px solid var(--border);"><div><p style="font-size:17px;font-weight:600;letter-spacing:-.02em;color:var(--ink);">👑 연간 명예의 전당</p></div><button onclick="closeModal('annualModal')" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);font-size:16px;color:var(--ink-3);cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">✕</button></div>
+            <div class="modal-header-section" style="display:flex;align-items:center;justify-content:space-between;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--surface);"><div><p style="font-size:17px;font-weight:600;letter-spacing:-.02em;color:var(--ink);">👑 연간 명예의 전당</p></div><button onclick="closeModal('annualModal')" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);font-size:16px;color:var(--ink-3);cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">✕</button></div>
             <div class="modal-scroll-body custom-scroll">
                 <table class="modal-sticky-table text-center font-black">
                     <thead>
@@ -264,7 +267,7 @@
     <div id="teamModal" class="fixed inset-0 z-[100] items-center justify-center p-4" style="display:none;">
         <div class="absolute inset-0 modal-overlay" onclick="closeModal('teamModal')"></div>
         <div class="modal-main-card max-w-2xl shadow-2xl relative font-black">
-            <div class="modal-header-section" style="display:flex;align-items:center;justify-content:space-between;padding:22px 28px;border-bottom:1px solid var(--border);"><div><p style="font-size:17px;font-weight:600;letter-spacing:-.02em;color:var(--ink);">🎲 팀 편성 결과</p></div><button onclick="closeModal('teamModal')" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);font-size:16px;color:var(--ink-3);cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">✕</button></div>
+            <div class="modal-header-section" style="display:flex;align-items:center;justify-content:space-between;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--surface);"><div><p style="font-size:17px;font-weight:600;letter-spacing:-.02em;color:var(--ink);">🎲 팀 편성 결과</p></div><button onclick="closeModal('teamModal')" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);font-size:16px;color:var(--ink-3);cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">✕</button></div>
             <div class="modal-scroll-body custom-scroll p-10 space-y-4 font-black" id="teamResultList"></div>
         </div>
     </div>
@@ -348,7 +351,7 @@
 
             tbody.innerHTML = rData.map((obj, i) => {
                 const diff = obj.avg > 0 ? (obj.avg - obj.base).toFixed(1) : "-";
-                return `<tr style="border-bottom:1px solid var(--surface-3);transition:background .1s;" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background=''"><td style="padding:12px 14px;font-size:11px;color:var(--ink-4);font-family:'DM Mono',monospace;">${i+1}</td><td style="padding:12px 14px;text-align:left;font-weight:600;color:var(--ink);">${obj.name}${getStar(obj.data.s, obj.data.ac)}</td>${obj.data.s.map((s, idx) => `<td style="padding:12px 14px;${obj.data.ac[idx]?'background:var(--surface-2);':''} ${s===300?'color:var(--danger);font-weight:600;':''}">${s||'-'}${getStar(obj.data.s, obj.data.ac, idx)}</td>`).join('')}<td style="padding:12px 14px;background:var(--surface-2);font-weight:600;font-family:'DM Mono',monospace;font-size:15px;color:var(--ink);">${obj.total||'-'}</td><td style="padding:12px 14px;background:var(--surface-2);font-weight:600;font-family:'DM Mono',monospace;font-size:15px;color:var(--ink-2);">${obj.avg||'-'}</td><td style="padding:12px 14px;color:var(--ink-3);font-family:'DM Mono',monospace;">${obj.base}</td><td style="padding:12px 14px;font-family:'DM Mono',monospace;font-weight:500;color:${parseFloat(diff)<0?'var(--danger)':'var(--success)'};">${diff>0?'+'+diff:diff}</td></tr>`;
+                return `<tr style="border-bottom:1px solid var(--surface-3);transition:background .1s;" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background=''"><td style="padding:12px 14px;font-size:11px;color:var(--ink-4);font-family:'DM Mono',monospace;">${i+1}</td><td style="padding:12px 14px;text-align:left;font-weight:600;color:var(--ink);">${obj.name}${getStar(obj.data.s, obj.data.ac)}</td>${obj.data.s.map((s, idx) => `<td style="padding:12px 14px;${obj.data.ac[idx]?'background:var(--surface-2);':''} ${s===300?'color:var(--danger);font-weight:600;':''}">${s||'-'}${getStar(obj.data.s, obj.data.ac, idx)}</td>`).join('')}<td style="padding:12px 14px;background:var(--accent-bg);font-weight:600;font-family:'DM Mono',monospace;font-size:15px;color:var(--accent);">${obj.total||'-'}</td><td style="padding:12px 14px;background:var(--accent-bg);font-weight:600;font-family:'DM Mono',monospace;font-size:15px;color:var(--accent);">${obj.avg||'-'}</td><td style="padding:12px 14px;color:var(--ink-3);font-family:'DM Mono',monospace;">${obj.base}</td><td style="padding:12px 14px;font-family:'DM Mono',monospace;font-weight:500;color:${parseFloat(diff)<0?'var(--danger)':'var(--success)'};">${diff>0?'+'+diff:diff}</td></tr>`;
             }).join('');
         }
 
@@ -372,7 +375,7 @@
                 if (sAwards.find(c => c.name === s.name)) badge += '<span class="text-indigo-600 text-[10px] mr-2">\u{1F3C5} 실력상</span>';
                 if (na) badge += '<span class="text-slate-400 text-[10px]">미참여</span>';
                 const rk = na ? '-' : rank++;
-                return `<tr style="border-bottom:1px solid var(--surface-3);${na?' opacity:.35;':''}" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background=''"><td style="padding:12px 14px;font-size:11px;color:var(--ink-4);">${rk}</td><td style="padding:12px 14px;text-align:left;font-weight:600;color:var(--ink);">${s.name}</td><td style="padding:12px 14px;font-size:16px;font-weight:600;font-family:'DM Mono',monospace;color:var(--ink);">${na?'-':s.avg}</td><td style="padding:12px 14px;color:var(--ink-3);font-family:'DM Mono',monospace;">${s.base}</td><td style="padding:12px 14px;font-family:'DM Mono',monospace;font-weight:500;color:${!na&&parseFloat(diff)<0?'var(--danger)':'var(--success)'};">${!na&&diff>0?'+'+diff:diff}</td><td style="padding:12px 14px;font-size:12px;color:var(--ink-3);">${na?'-':s.v+'회'}</td><td style="padding:12px 14px;color:var(--ink-2);font-family:'DM Mono',monospace;">${na?'-':s.g+'G'}</td><td style="padding:12px 14px;text-align:left;">${badge||'-'}</td></tr>`;
+                return `<tr style="border-bottom:1px solid var(--surface-3);${na?' opacity:.35;':''}" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background=''"><td style="padding:12px 14px;font-size:11px;color:var(--ink-4);">${rk}</td><td style="padding:12px 14px;text-align:left;font-weight:600;color:var(--ink);">${s.name}</td><td style="padding:12px 14px;font-size:16px;font-weight:600;font-family:'DM Mono',monospace;color:var(--accent);">${na?'-':s.avg}</td><td style="padding:12px 14px;color:var(--ink-3);font-family:'DM Mono',monospace;">${s.base}</td><td style="padding:12px 14px;font-family:'DM Mono',monospace;font-weight:500;color:${!na&&parseFloat(diff)<0?'var(--danger)':'var(--success)'};">${!na&&diff>0?'+'+diff:diff}</td><td style="padding:12px 14px;font-size:12px;color:var(--ink-3);">${na?'-':s.v+'회'}</td><td style="padding:12px 14px;color:var(--ink-2);font-family:'DM Mono',monospace;">${na?'-':s.g+'G'}</td><td style="padding:12px 14px;text-align:left;">${badge||'-'}</td></tr>`;
             }).join('');
         }
 
@@ -405,7 +408,7 @@
             box.style.background = on ? '#F0FDF4' : 'var(--surface-2)';
             box.style.color = on ? 'var(--success)' : 'var(--ink-3)';
             const dot = document.getElementById('statusDot');
-            dot.style.background = on ? 'var(--success)' : 'var(--ink-4)';
+            dot.style.background = on ? '#22C55E' : 'var(--ink-4)';
             document.getElementById('statusText').innerText = on ? "ONLINE" : "OFFLINE";
         }
         function updateDB(sync = true) { localStorage.setItem('ABC_M_V61', JSON.stringify(members)); localStorage.setItem('ABC_H_V61', JSON.stringify(history)); renderUI(); if (sync && accessToken) { markDirty(); scheduleDebouncedSync(); } }
@@ -418,8 +421,8 @@
             _selectedGender = g;
             document.getElementById('newMemberGender').value = g;
             const bm = document.getElementById('genderBtnM'), bf = document.getElementById('genderBtnF');
-            bm.style.background = g==='M' ? 'var(--ink)' : 'var(--surface-2)';
-            bm.style.borderColor = g==='M' ? 'var(--ink)' : 'var(--border)';
+            bm.style.background = g==='M' ? 'var(--accent)' : 'var(--surface-2)';
+            bm.style.borderColor = g==='M' ? 'var(--accent)' : 'var(--border)';
             bm.style.color = g==='M' ? '#fff' : 'var(--ink-3)';
             bf.style.background = g==='F' ? '#DB2777' : 'var(--surface-2)';
             bf.style.borderColor = g==='F' ? '#DB2777' : 'var(--border)';
@@ -432,7 +435,7 @@
         function removeMember(n) { if(confirm(`${n} 회원을 삭제할까요?`)) { members = members.filter(m => m.name !== n); updateDB(); } }
         function saveAndGoNext() { const d = document.getElementById('gameDateInput').value, n = document.getElementById('memberSelector').value; if(!n) return; const s = [], ac = []; for(let i=1; i<=4; i++) { s.push(parseInt(document.getElementById(`g${i}`).value) || 0); ac.push(document.getElementById(`ac${i}`).checked); } if(!history[d]) history[d] = {}; history[d][n] = { s, ac }; updateDB(); const idx = members.findIndex(m => m.name === n); if(idx < members.length - 1) { document.getElementById('memberSelector').value = members[idx+1].name; loadScoreData(); } }
         function loadScoreData() { const d = document.getElementById('gameDateInput').value, n = document.getElementById('memberSelector').value; const e = (history[d] && history[d][n]) || { s: ['', '', '', ''], ac: [0, 0, 0, 0] }; [1, 2, 3, 4].forEach(i => { document.getElementById(`g${i}`).value = e.s[i - 1]; document.getElementById(`ac${i}`).checked = !!e.ac[i - 1]; }); }
-        function drawChart() { const n=document.getElementById('chartUserSelect').value; if(!n) return; const ctx=document.getElementById('avgChart').getContext('2d'); const l=[],d=[]; let ts=0,tc=0; Object.keys(history).sort().forEach(dt=>{ if(history[dt][n]){ const g=history[dt][n].s.filter(v=>v>0); if(g.length>0){ts+=g.reduce((a,b)=>a+b,0);tc+=g.length;l.push(dt);d.push((ts/tc).toFixed(1));} } }); if(chartObj) chartObj.destroy(); chartObj = new Chart(ctx, { type:'line', data:{labels:l, datasets:[{label:'AVG', data:d, borderColor:'var(--ink)', tension:0.3, fill:true, backgroundColor:'rgba(30,41,59,0.04)'}]}, options:{maintainAspectRatio:false, plugins:{legend:{display:false}}}}); }
+        function drawChart() { const n=document.getElementById('chartUserSelect').value; if(!n) return; const ctx=document.getElementById('avgChart').getContext('2d'); const l=[],d=[]; let ts=0,tc=0; Object.keys(history).sort().forEach(dt=>{ if(history[dt][n]){ const g=history[dt][n].s.filter(v=>v>0); if(g.length>0){ts+=g.reduce((a,b)=>a+b,0);tc+=g.length;l.push(dt);d.push((ts/tc).toFixed(1));} } }); if(chartObj) chartObj.destroy(); chartObj = new Chart(ctx, { type:'line', data:{labels:l, datasets:[{label:'AVG', data:d, borderColor:'var(--accent)', tension:0.3, fill:true, backgroundColor:'rgba(37,99,235,0.05)'}]}, options:{maintainAspectRatio:false, plugins:{legend:{display:false}}}}); }
         function calcAvg(n) { let s=0, c=0; for(let d in history) if(history[d][n]){ const v=history[d][n].s.filter(g=>g>0); s+=v.reduce((a,b)=>a+b,0); c+=v.length; } return c>0?(s/c).toFixed(1):"0.0"; }
         function renderAwardSummary() {
             const target = document.getElementById('viewDateSelector').value.substring(0, 7);
@@ -445,7 +448,7 @@
             const fH = [...stats].filter(s => s.gender === 'F').sort((a,b) => b.h - a.h)[0];
             const sA = stats.filter(s => s.avg > s.base).sort((a,b) => (b.avg-b.base) - (a.avg-a.base)).reverse().slice(0, 3);
             const pL = stats.filter(s => s.avg < s.base);
-            document.getElementById('awardSummaryContent').innerHTML = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;"><div style="padding:24px;background:var(--surface-2);border-radius:var(--radius-lg);border:1px solid var(--border);"><p style="font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:14px;">🔥 HIGH GAME AWARDS</p><p style="font-size:14px;font-weight:500;color:var(--ink);margin-bottom:6px;">남성: ${mH?mH.name+' <span style=\'font-family:DM Mono,monospace;color:var(--ink-2);\'>'+mH.h+'</span>':'-'}</p><p style="font-size:14px;font-weight:500;color:var(--ink);">여성: ${fH?fH.name+' <span style=\'font-family:DM Mono,monospace;color:var(--ink-2);\'>'+fH.h+'</span>':'-'}</p></div><div style="padding:24px;background:var(--surface-2);border-radius:var(--radius-lg);border:1px solid var(--border);"><p style="font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:14px;">🏅 실력상 TOP 3</p><div>${sA.map((s,i)=>`<p style="font-size:14px;font-weight:500;color:var(--ink);margin-bottom:6px;">${i+1}위: ${s.name} <span style='color:var(--success);font-family:DM Mono,monospace;'>+${(s.avg-s.base).toFixed(1)}</span></p>`).join('')||'-'}</div></div></div><div style="padding:24px;background:var(--surface-2);border-radius:var(--radius-lg);border:1px solid var(--border);"><p style="font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:14px;">💸 벌금 대상</p><div style="display:flex;flex-wrap:wrap;gap:8px;">${pL.map(s => `<span style="padding:5px 12px;border-radius:8px;background:var(--surface);border:1px solid var(--border);font-size:12px;font-weight:500;color:var(--danger);">${s.name} <span style='font-family:DM Mono,monospace;'>-${Math.abs(s.avg-s.base).toFixed(1)}</span></span>`).join('')||'<span style="font-size:13px;color:var(--ink-3);">없음</span>'}</div></div>`;
+            document.getElementById('awardSummaryContent').innerHTML = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;"><div style="padding:24px;background:var(--surface-2);border-radius:var(--radius);border:1px solid var(--border);"><p style="font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:14px;">🔥 HIGH GAME AWARDS</p><p style="font-size:14px;font-weight:500;color:var(--ink);margin-bottom:6px;">남성: ${mH?mH.name+' <span style=\'font-family:DM Mono,monospace;color:var(--ink-2);\'>'+mH.h+'</span>':'-'}</p><p style="font-size:14px;font-weight:500;color:var(--ink);">여성: ${fH?fH.name+' <span style=\'font-family:DM Mono,monospace;color:var(--ink-2);\'>'+fH.h+'</span>':'-'}</p></div><div style="padding:24px;background:var(--surface-2);border-radius:var(--radius);border:1px solid var(--border);"><p style="font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:14px;">🏅 실력상 TOP 3</p><div>${sA.map((s,i)=>`<p style="font-size:14px;font-weight:500;color:var(--ink);margin-bottom:6px;">${i+1}위: ${s.name} <span style='color:var(--success);font-family:DM Mono,monospace;'>+${(s.avg-s.base).toFixed(1)}</span></p>`).join('')||'-'}</div></div></div><div style="padding:24px;background:var(--surface-2);border-radius:var(--radius);border:1px solid var(--border);"><p style="font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:14px;">💸 벌금 대상</p><div style="display:flex;flex-wrap:wrap;gap:8px;">${pL.map(s => `<span style="padding:5px 12px;border-radius:8px;background:var(--surface);border:1px solid var(--border);font-size:12px;font-weight:500;color:var(--danger);">${s.name} <span style='font-family:DM Mono,monospace;'>-${Math.abs(s.avg-s.base).toFixed(1)}</span></span>`).join('')||'<span style="font-size:13px;color:var(--ink-3);">없음</span>'}</div></div>`;
         }
         function renderAnnualRank() {
             let stats = members.map(m => {
@@ -461,10 +464,10 @@
                 const na = s.avg === 0;
                 const diff = !na ? (s.avg - s.base).toFixed(1) : '-';
                 const rk = na ? '-' : annRank++;
-                return `<tr style="border-bottom:1px solid var(--surface-3);${na?'opacity:.35;':''}" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background=''"><td style="padding:12px 14px;font-size:11px;color:var(--ink-4);font-family:'DM Mono',monospace;">${rk}</td><td style="padding:12px 14px;text-align:left;font-weight:600;color:var(--ink);">${s.name}</td><td style="padding:12px 14px;font-size:16px;font-weight:600;font-family:'DM Mono',monospace;color:var(--ink);">${na?'-':s.avg}</td><td style="padding:12px 14px;color:var(--ink-3);font-family:'DM Mono',monospace;">${s.base}</td><td style="padding:12px 14px;font-family:'DM Mono',monospace;font-weight:500;color:${!na&&parseFloat(diff)<0?'var(--danger)':'var(--success)'};">${!na&&diff>0?'+'+diff:diff}</td><td style="padding:12px 14px;color:var(--ink-3);font-family:'DM Mono',monospace;">${na?'미참여':s.g+'G'}</td></tr>`;
+                return `<tr style="border-bottom:1px solid var(--surface-3);${na?'opacity:.35;':''}" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background=''"><td style="padding:12px 14px;font-size:11px;color:var(--ink-4);font-family:'DM Mono',monospace;">${rk}</td><td style="padding:12px 14px;text-align:left;font-weight:600;color:var(--ink);">${s.name}</td><td style="padding:12px 14px;font-size:16px;font-weight:600;font-family:'DM Mono',monospace;color:var(--accent);">${na?'-':s.avg}</td><td style="padding:12px 14px;color:var(--ink-3);font-family:'DM Mono',monospace;">${s.base}</td><td style="padding:12px 14px;font-family:'DM Mono',monospace;font-weight:500;color:${!na&&parseFloat(diff)<0?'var(--danger)':'var(--success)'};">${!na&&diff>0?'+'+diff:diff}</td><td style="padding:12px 14px;color:var(--ink-3);font-family:'DM Mono',monospace;">${na?'미참여':s.g+'G'}</td></tr>`;
             }).join('');
         }
-        function splitTeams() { const n=parseInt(prompt("몇 팀으로 나눌까요?", 2)); if(!n) return; const active=members.map(m=>({name:m.name, avg:parseFloat(calcAvg(m.name))})).sort((a,b)=>b.avg-a.avg); const teams=Array.from({length:n},()=>[]); active.forEach((m,i)=>{ const idx=Math.floor(i/n)%2===0?(i%n):(n-1-(i%n)); teams[idx].push(`${m.name}(${m.avg})`); }); document.getElementById('teamResultList').innerHTML = teams.map((t,i)=>`<div style="padding:20px;background:var(--surface-2);border-radius:var(--radius-md);border:1px solid var(--border);"><p style="font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:10px;">TEAM ${i+1}</p><p style="font-size:14px;font-weight:500;color:var(--ink);">${t.join(', ')}</p></div>`).join(''); openModal('teamModal'); }
+        function splitTeams() { const n=parseInt(prompt("몇 팀으로 나눌까요?", 2)); if(!n) return; const active=members.map(m=>({name:m.name, avg:parseFloat(calcAvg(m.name))})).sort((a,b)=>b.avg-a.avg); const teams=Array.from({length:n},()=>[]); active.forEach((m,i)=>{ const idx=Math.floor(i/n)%2===0?(i%n):(n-1-(i%n)); teams[idx].push(`${m.name}(${m.avg})`); }); document.getElementById('teamResultList').innerHTML = teams.map((t,i)=>`<div style="padding:20px;background:var(--surface-2);border-radius:var(--radius);border:1px solid var(--border);"><p style="font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:10px;">TEAM ${i+1}</p><p style="font-size:14px;font-weight:500;color:var(--ink);">${t.join(', ')}</p></div>`).join(''); openModal('teamModal'); }
         async function syncFromDrive() { try { const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${syncFileName}' and trashed=false`, { headers: { 'Authorization': `Bearer ${accessToken}` } }); const list = await res.json(); if (list.files && list.files.length > 0) { const dataRes = await fetch(`https://www.googleapis.com/drive/v3/files/${list.files[0].id}?alt=media`, { headers: { 'Authorization': `Bearer ${accessToken}` } }); const dData = await dataRes.json(); if (confirm("Cloud 데이터를 불러올까요?")) { members = dData.members; history = dData.history; updateDB(false); alert("완료!"); } } } catch (err) {} }
         // ── Dirty Flag + Debounce 저장 로직 ──
         let _isDirty = false;
