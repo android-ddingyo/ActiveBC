@@ -135,7 +135,7 @@
                 <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;">
                     <div style="display:flex;gap:8px;">
                         <input type="text" id="newMemberName" placeholder="성함" class="bc-input" style="flex:1;min-width:0;">
-                        <input type="number" id="newMemberBase" placeholder="AVG" class="bc-input" style="width:60px;flex:0 0 60px;text-align:center;">
+                        <input type="number" id="newMemberBase" placeholder="AVG" class="bc-input" style="width:60px;flex:0 0 60px;text-align:center;" min="0" max="300" oninput="clampScore(this)">
                     </div>
                     <div style="display:flex;gap:6px;">
                         <button id="genderBtnM" onclick="selectGender('M')" style="flex:1;padding:9px 8px;border-radius:var(--radius-sm);border:1.5px solid var(--ink);background:var(--ink);color:#fff;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;">남성</button>
@@ -419,7 +419,7 @@
         function updateDB(sync = true) { localStorage.setItem('ABC_M_V61', JSON.stringify(members)); localStorage.setItem('ABC_H_V61', JSON.stringify(history)); renderUI(); if (sync && accessToken) { markDirty(); scheduleDebouncedSync(); } }
         function openModal(id) { const el = document.getElementById(id); if(!el) return; el.style.display = 'flex'; if(id==='monthlyModal') renderMonthlyRank(); if(id==='awardSummaryModal') renderAwardSummary(); if(id==='annualModal') renderAnnualRank(); }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-        function editMemberInfo(name) { const m = members.find(x => x.name === name); const nB = prompt(`${name} AVG:`, m.base); if (nB !== null) { m.base = parseInt(nB) || 0; updateDB(); } }
+        function editMemberInfo(name) { const m = members.find(x => x.name === name); const nB = prompt(`${name} AVG (0~300):`, m.base); if (nB !== null) { let v = parseInt(nB) || 0; if (v > 300) { alert('AVG는 300을 초과할 수 없습니다.'); v = 300; } if (v < 0) v = 0; m.base = v; updateDB(); } }
         function toggleGender(name) { const m = members.find(x => x.name === name); m.gender = m.gender === 'F' ? 'M' : 'F'; updateDB(); }
         let _selectedGender = 'M';
         function selectGender(g) {
@@ -497,7 +497,7 @@
             XLSX.writeFile(wb, fileName);
         }
         function importData(event) { const f = event.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = (e) => { const d = JSON.parse(e.target.result); if (d.members) { members = d.members; history = d.history; updateDB(true); alert("데이터 복구 성공!"); } }; r.readAsText(f); }
-        function addNewMember() { const n = document.getElementById('newMemberName').value.trim(); const b = parseInt(document.getElementById('newMemberBase').value) || 0; const g = document.getElementById('newMemberGender').value; if (n && !members.find(m => m.name === n)) { members.push({ name: n, base: b, gender: g }); updateDB(); } }
+        function addNewMember() { const n = document.getElementById('newMemberName').value.trim(); let b = parseInt(document.getElementById('newMemberBase').value) || 0; if (b > 300) b = 300; const g = document.getElementById('newMemberGender').value; if (n && !members.find(m => m.name === n)) { members.push({ name: n, base: b, gender: g }); updateDB(); document.getElementById('newMemberName').value = ''; document.getElementById('newMemberBase').value = ''; } }
         function removeMember(n) { if(confirm(`${n} 회원을 삭제할까요?`)) { members = members.filter(m => m.name !== n); updateDB(); } }
         function clampScore(el) {
             let v = parseInt(el.value);
