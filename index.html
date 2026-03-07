@@ -236,7 +236,24 @@
     <div id="awardSummaryModal" class="fixed inset-0 z-[100] items-center justify-center p-4" style="display:none;">
         <div class="absolute inset-0 modal-overlay" onclick="closeModal('awardSummaryModal')"></div>
         <div class="modal-main-card max-w-2xl shadow-2xl relative">
-            <div class="modal-header-section" style="display:flex;align-items:center;justify-content:space-between;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--surface);"><div><p style="font-size:17px;font-weight:600;letter-spacing:-.02em;color:var(--ink);">🏆 시상 및 벌금 현황</p></div><button onclick="closeModal('awardSummaryModal')" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);font-size:16px;color:var(--ink-3);cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">✕</button></div>
+            <div class="modal-header-section" style="display:flex;align-items:center;justify-content:space-between;padding:20px 28px;border-bottom:1px solid var(--border);background:var(--surface);gap:12px;flex-wrap:wrap;">
+                <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+                    <div>
+                        <p style="font-size:17px;font-weight:600;letter-spacing:-.02em;color:var(--ink);">🏆 시상 및 벌금 현황</p>
+                        <p style="font-size:12px;color:var(--ink-3);margin-top:3px;">조회할 년도와 월을 선택하세요</p>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:6px;">
+                        <select id="awardYearSel" onchange="renderAwardSummary()" class="bc-input" style="width:90px;font-size:13px;padding:7px 10px;cursor:pointer;"></select>
+                        <select id="awardMonthSel" onchange="renderAwardSummary()" class="bc-input" style="width:72px;font-size:13px;padding:7px 10px;cursor:pointer;">
+                            <option value="01">1월</option><option value="02">2월</option><option value="03">3월</option>
+                            <option value="04">4월</option><option value="05">5월</option><option value="06">6월</option>
+                            <option value="07">7월</option><option value="08">8월</option><option value="09">9월</option>
+                            <option value="10">10월</option><option value="11">11월</option><option value="12">12월</option>
+                        </select>
+                    </div>
+                </div>
+                <button onclick="closeModal('awardSummaryModal')" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);font-size:16px;color:var(--ink-3);cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;flex-shrink:0;">✕</button>
+            </div>
             <div class="modal-scroll-body custom-scroll p-10 space-y-10 font-black" id="awardSummaryContent"></div>
         </div>
     </div>
@@ -477,7 +494,13 @@
                 ySel.value = curYear;
                 renderAnnualRank();
             }
-            if (id === 'awardSummaryModal') renderAwardSummary();
+            if (id === 'awardSummaryModal') {
+                const ySel = document.getElementById('awardYearSel');
+                ySel.innerHTML = years.map(y => `<option value="${y}">${y}년</option>`).join('');
+                ySel.value = curYear;
+                document.getElementById('awardMonthSel').value = curMonth;
+                renderAwardSummary();
+            }
         }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
         function editMemberInfo(name) { const m = members.find(x => x.name === name); const nB = prompt(`${name} AVG (0~300):`, m.base); if (nB !== null) { let v = parseInt(nB) || 0; if (v > 300) { alert('AVG는 300을 초과할 수 없습니다.'); v = 300; } if (v < 0) v = 0; m.base = v; updateDB(); } }
@@ -692,7 +715,9 @@
         function drawChart() { const n=document.getElementById('chartUserSelect').value; if(!n) return; const ctx=document.getElementById('avgChart').getContext('2d'); const l=[],d=[]; let ts=0,tc=0; Object.keys(history).sort().forEach(dt=>{ if(history[dt][n]){ const g=history[dt][n].s.filter(v=>v>0); if(g.length>0){ts+=g.reduce((a,b)=>a+b,0);tc+=g.length;l.push(dt);d.push((ts/tc).toFixed(1));} } }); if(chartObj) chartObj.destroy(); chartObj = new Chart(ctx, { type:'line', data:{labels:l, datasets:[{label:'AVG', data:d, borderColor:'var(--ink)', tension:0.3, fill:true, backgroundColor:'rgba(30,41,59,0.04)'}]}, options:{maintainAspectRatio:false, plugins:{legend:{display:false}}}}); }
         function calcAvg(n) { let s=0, c=0; for(let d in history) if(history[d][n]){ const v=history[d][n].s.filter(g=>g>0); s+=v.reduce((a,b)=>a+b,0); c+=v.length; } return c>0?(s/c).toFixed(1):"0.0"; }
         function renderAwardSummary() {
-            const target = document.getElementById('viewDateSelector').value.substring(0, 7);
+            const yr = document.getElementById('awardYearSel') ? document.getElementById('awardYearSel').value : document.getElementById('viewDateSelector').value.substring(0,4);
+            const mo = document.getElementById('awardMonthSel') ? document.getElementById('awardMonthSel').value : document.getElementById('viewDateSelector').value.substring(5,7);
+            const target = yr + '-' + mo;
             let stats = members.map(m => {
                 let t=0, g=0, v=0, h=0;
                 for (let d in history) if (d.startsWith(target) && history[d][m.name]) { const s = history[d][m.name].s.filter(v=>v>0); if(s.length > 0) { t += s.reduce((a,b)=>a+b,0); g += s.length; v++; h = Math.max(h, ...s); } }
